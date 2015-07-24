@@ -38,8 +38,8 @@ def read_maze(img):
     h,s,v = cv2.split(cv2.cvtColor(img, cv2.COLOR_BGR2HSV))
 
     thresh_s = cv2.threshold(s, 100, 255, cv2.THRESH_BINARY)[1]
-    thresh_r = cv2.bitwise_and(cv2.threshold(r, 250, 255, cv2.THRESH_BINARY)[1], thresh_s)
-    thresh_g = cv2.bitwise_and(cv2.threshold(g, 250, 255, cv2.THRESH_BINARY)[1], thresh_s)
+    thresh_r = cv2.bitwise_and(cv2.threshold(r, 200, 255, cv2.THRESH_BINARY)[1], thresh_s)
+    thresh_g = cv2.bitwise_and(cv2.threshold(g, 200, 255, cv2.THRESH_BINARY)[1], thresh_s)
 
     start = get_largest_contour_centroid(thresh_r)
     if start == None:
@@ -53,12 +53,17 @@ def read_maze(img):
         return None
     cv2.circle(img2, end, 25, (0, 0, 0), 1, cv2.LINE_AA)
 
-    thresh_v = cv2.bitwise_and(cv2.threshold(v, 250, 255, cv2.THRESH_BINARY)[1], cv2.bitwise_not(cv2.bitwise_or(thresh_r, thresh_g)))
+    thresh_v = cv2.bitwise_and(cv2.threshold(v, 254, 255, cv2.THRESH_BINARY)[1], cv2.bitwise_not(cv2.bitwise_or(thresh_r, thresh_g)))  
+    #thresh_v =  cv2.GaussianBlur(thresh_v,(5,5),0)
+    #thresh_v = cv2.bitwise_and(cv2.threshold(v, 254, 255, cv2.THRESH_BINARY)[1], cv2.bitwise_not(cv2.bitwise_or(thresh_r, thresh_g))) 
+    
     thresh_v_eroded = cv2.erode(thresh_v, np.ones((3,3), np.uint8))
-    thresh_v = skeletonize(thresh_v)
-    cv2.imshow("skeleton", thresh_v)
-    corners = cv2.goodFeaturesToTrack(thresh_v, 0, 0.1, 10)
-    nodes = [graph.Node(start), graph.Node(end)]
+    thresh_v_skeleton = skeletonize(thresh_v)
+    cv2.imshow("thresh_v", thresh_v)
+    cv2.imshow("lines", cv2.bitwise_or(thresh_v_skeleton, cv2.bitwise_not(thresh_v)))
+    #.imshow("lines", thresh_v_skeleton)
+    corners = cv2.goodFeaturesToTrack(thresh_v_skeleton, 0, 0.1, 10)
+    nodes = []
     for corner in corners:
         if thresh_v_eroded[corner[0][1]][corner[0][0]] != 0:
             nodes.append(graph.Node((corner[0][1], corner[0][0])))
