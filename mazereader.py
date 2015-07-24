@@ -14,7 +14,7 @@ def get_largest_contour_centroid(img):
 #thin all lines to 1 pixel wide
 def skeletonize(img):
     size = np.size(img)
-    kernel = cv2.getStructuringElement(cv2.MORPH_CROSS, (3,3))
+    kernel = cv2.getStructuringElement(cv2.MORPH_CROSS, (3,5))
     ret = np.zeros(img.shape, np.uint8)
     while True:
         eroded = cv2.erode(img, kernel)
@@ -52,11 +52,16 @@ def read_maze(img):
         return None
     cv2.circle(img2, end, 25, (0, 0, 0), 1, cv2.LINE_AA)
 
-    thresh_v = cv2.bitwise_and(cv2.threshold(v, 200, 255, cv2.THRESH_BINARY)[1], cv2.bitwise_not(cv2.bitwise_or(thresh_r, thresh_g)))
+    thresh_v = cv2.bitwise_and(cv2.threshold(v, 254, 255, cv2.THRESH_BINARY)[1], cv2.bitwise_not(cv2.bitwise_or(thresh_r, thresh_g)))  
+    #thresh_v =  cv2.GaussianBlur(thresh_v,(5,5),0)
+    #thresh_v = cv2.bitwise_and(cv2.threshold(v, 254, 255, cv2.THRESH_BINARY)[1], cv2.bitwise_not(cv2.bitwise_or(thresh_r, thresh_g))) 
+    
     thresh_v_eroded = cv2.erode(thresh_v, np.ones((3,3), np.uint8))
-    thresh_v = skeletonize(thresh_v)
-    cv2.imshow("lines", thresh_v)
-    corners = cv2.goodFeaturesToTrack(thresh_v, 0, 0.1, 10)
+    thresh_v_skeleton = skeletonize(thresh_v)
+    cv2.imshow("thresh_v", thresh_v)
+    cv2.imshow("lines", cv2.bitwise_or(thresh_v_skeleton, cv2.bitwise_not(thresh_v)))
+    #.imshow("lines", thresh_v_skeleton)
+    corners = cv2.goodFeaturesToTrack(thresh_v_skeleton, 0, 0.1, 10)
     final_corners = []
     for corner in corners:
         if thresh_v_eroded[corner[0][1]][corner[0][0]] != 0:
