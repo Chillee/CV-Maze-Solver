@@ -14,7 +14,7 @@ def get_largest_contour_centroid(img):
 #thin all lines to 1 pixel wide
 def skeletonize(img):
     size = np.size(img)
-    kernel = cv2.getStructuringElement(cv2.MORPH_CROSS, (3,5))
+    kernel = cv2.getStructuringElement(cv2.MORPH_CROSS, (3,3))
     ret = np.zeros(img.shape, np.uint8)
     while True:
         eroded = cv2.erode(img, kernel)
@@ -53,8 +53,6 @@ def read_maze(img):
     cv2.circle(img2, end, 25, (0, 0, 0), 1, cv2.LINE_AA)
 
     thresh_v = cv2.bitwise_and(cv2.threshold(v, 254, 255, cv2.THRESH_BINARY)[1], cv2.bitwise_not(cv2.bitwise_or(thresh_r, thresh_g)))  
-    #thresh_v =  cv2.GaussianBlur(thresh_v,(5,5),0)
-    #thresh_v = cv2.bitwise_and(cv2.threshold(v, 254, 255, cv2.THRESH_BINARY)[1], cv2.bitwise_not(cv2.bitwise_or(thresh_r, thresh_g))) 
     
     thresh_v_eroded = cv2.erode(thresh_v, np.ones((3,3), np.uint8))
     thresh_v_skeleton = skeletonize(thresh_v)
