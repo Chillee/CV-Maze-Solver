@@ -62,5 +62,5 @@ def read_maze(img):
 
     g = create_graph_nodes(thresh_v_skeleton, thresh_v_eroded, img2)
     connections.get_connections(g, thresh_v_skeleton, thresh_v_eroded, img2)
-
+    
     return img2, graph
