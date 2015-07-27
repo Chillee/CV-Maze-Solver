@@ -63,8 +63,6 @@ def read_maze(img):
     g = create_graph_nodes(thresh_v_skeleton, thresh_v_eroded, img2)
     connections.get_connections(g, thresh_v_skeleton, img2)
 
-    cv2.imshow("thresh_v", thresh_v_skeleton)
-    cv2.imshow("contour", blank_image)
     cv2.imshow("img2", img2)
 
     return img2, graph
