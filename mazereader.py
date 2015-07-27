@@ -61,8 +61,6 @@ def read_maze(img):
     cv2.imshow("lines", thresh_v_skeleton)
 
     g = create_graph_nodes(thresh_v_skeleton, thresh_v_eroded, img2)
-    connections.get_connections(g, thresh_v_skeleton, img2)
-
-    cv2.imshow("img2", img2)
+    connections.get_connections(g, thresh_v_skeleton, thresh_v_eroded, img2)
 
     return img2, graph
