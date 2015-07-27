@@ -34,7 +34,7 @@ def check_LOS(img, a, b):
             return False
     return True
 
-def get_connections(g, skeleton, eroded, img):
+def get_connections(g, skeleton, eroded, start, end, img):
     hier, contours, hierarchy = cv2.findContours(skeleton.copy(),cv2.RETR_CCOMP,cv2.CHAIN_APPROX_SIMPLE )
 
     blank_image = np.zeros((img.shape[0], img.shape[1],3), np.uint8)
@@ -42,6 +42,10 @@ def get_connections(g, skeleton, eroded, img):
     areas = sorted(areas, reverse=True)
 
     tree = g.build_kd_tree()
+
+    node_pos, nodes = tree.query(np.array([[start[0], start[1]], [end[0], end[1]]]))
+    start = nodes[0]
+    end = nodes[1]
 
     for i in areas:
         contour = contours[i[1]]
@@ -60,7 +64,9 @@ def get_connections(g, skeleton, eroded, img):
         node_a = nodes[0]
         node_b = nodes[1]
         if check_LOS(eroded, g.nodes[node_a].pos, g.nodes[node_b].pos):
-            dx = g.nodes[node_a].pos[0] - g.nodes[node_b].pos[1]
+            dx = g.nodes[node_a].pos[0] - g.nodes[node_b].pos[0]
             dy = g.nodes[node_a].pos[1] - g.nodes[node_b].pos[1]
             g.link_nodes(node_a, node_b, np.sqrt(dx * dx + dy * dy))
             cv2.line(img, g.nodes[node_a].pos, g.nodes[node_b].pos, (0,255,0), 2, cv2.LINE_AA)
+
+    return (start, end)

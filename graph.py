@@ -29,15 +29,14 @@ class Graph(object):
         dists[start] = 0
         prev = [-1 for i in self.nodes]
 
-        curNodes = Queue.PriorityQueue()
+        curNodes = PriorityQueue()
         curNodes.put((0, start))
 
         while curNodes is not None:
             index, curNode = curNodes.get()
             for connection in self.nodes[index].connections:
-                newDist = dist[index] + connection[1]
-                if newDist < dist[connection[0]]:
-                    dist[connection[0]] = newDist
+                newDist = dists[index] + connection[1]
+                if newDist < dists[connection[0]]:
+                    dists[connection[0]] = newDist
                     prev[connection[0]] = index
         return dist[end]
-    
