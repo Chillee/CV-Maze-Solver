@@ -60,7 +60,9 @@ def get_connections(g, skeleton, eroded, img):
         node_a = nodes[0]
         node_b = nodes[1]
         if check_LOS(eroded, g.nodes[node_a].pos, g.nodes[node_b].pos):
-            dx = g.nodes[node_a].pos[0] - g.nodes[node_b].pos[1]
+            dx = g.nodes[node_a].pos[0] - g.nodes[node_b].pos[0]
             dy = g.nodes[node_a].pos[1] - g.nodes[node_b].pos[1]
             g.link_nodes(node_a, node_b, np.sqrt(dx * dx + dy * dy))
             cv2.line(img, g.nodes[node_a].pos, g.nodes[node_b].pos, (0,255,0), 2, cv2.LINE_AA)
+    print g.dijkstra(1, 5)
+    print "hmm"

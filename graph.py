@@ -16,7 +16,7 @@ class Graph(object):
         self.nodes.append(node)
         return len(self.nodes) - 1
 
-    def link_nodes(self, a, b, d):
+    def link_nodes(self, a, b, d=1):
         self.nodes[a].connections.append((b, d))
         self.nodes[b].connections.append((a, d))
         self.connections.append((a,b, d))
@@ -29,15 +29,27 @@ class Graph(object):
         dists[start] = 0
         prev = [-1 for i in self.nodes]
 
-        curNodes = Queue.PriorityQueue()
+        curNodes = PriorityQueue()
         curNodes.put((0, start))
 
-        while curNodes is not None:
-            index, curNode = curNodes.get()
+        while not curNodes.empty():
+            curDist, index = curNodes.get()
+            print "------"
+            print index, len(self.nodes[index].connections)
+
             for connection in self.nodes[index].connections:
-                newDist = dist[index] + connection[1]
-                if newDist < dist[connection[0]]:
-                    dist[connection[0]] = newDist
+                print connection[0], connection[1]
+                newDist = dists[index] + connection[1]
+                if newDist < dists[connection[0]]:
+                    print "hey"
+                    dists[connection[0]] = newDist
                     prev[connection[0]] = index
-        return dist[end]
-    
+                    curNodes.put((newDist, connection[0]))
+        
+        curNode = end
+        path =[]
+        while curNode != -1:
+            path.append(curNode)
+            curNode = prev[curNode]
+        return path[::-1]
+

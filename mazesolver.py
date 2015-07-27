@@ -1,7 +1,7 @@
 import cv2
 import mazereader
 
-img = cv2.imread("circular_maze1.png")
+img = cv2.imread("maze1.png")
 ret = mazereader.read_maze(img)
 if ret != None:
     img2, graph = ret
