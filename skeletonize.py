@@ -2,25 +2,6 @@ import cv2
 import numpy as np
 from scipy import weave
 
-#thin all lines to 1 pixel wide
-def skeletonize(img):
-    size = np.size(img)
-    kernel = cv2.getStructuringElement(cv2.MORPH_CROSS, (3,3))
-    ret = np.zeros(img.shape, np.uint8)
-    while True:
-        eroded = cv2.erode(img, kernel)
-        temp = cv2.dilate(eroded, kernel)
-        temp = cv2.subtract(img, temp)
-        ret = cv2.bitwise_or(ret, temp)
-        img = eroded.copy()
-
-        zeros = size - cv2.countNonZero(img)
-        if zeros == size:
-            break
-
-    return ret
-
-
 def skeletonize_guo_hall(img):
     h,w,d = img.shape
     def trans(dx, dy):
@@ -79,14 +60,3 @@ def skeletonize_zhang_shuen(src):
         if np.sum(diff) == 0:
             break
     return dst * 255
-
-if __name__ == "__main__":
-    src = cv2.imread("circular_maze1.png")
-    if src == None:
-        sys.exit()
-    bw = cv2.cvtColor(src, cv2.COLOR_BGR2GRAY)
-    _, bw2 = cv2.threshold(bw, 10, 255, cv2.THRESH_BINARY)
-    bw2 = thinning(bw2)
-    cv2.imshow("src", bw)
-    cv2.imshow("thinning", bw2)
-    cv2.waitKey()
