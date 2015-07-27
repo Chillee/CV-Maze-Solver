@@ -34,10 +34,8 @@ class Graph(object):
 
         while not curNodes.empty():
             curDist, index = curNodes.get()
-            print index, len(self.nodes[index].connections)
 
             for connection in self.nodes[index].connections:
-                print connection[0], connection[1]
                 newDist = dists[index] + connection[1]
                 if newDist < dists[connection[0]]:
                     dists[connection[0]] = newDist

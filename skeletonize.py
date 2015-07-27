@@ -42,7 +42,7 @@ def _thinningIteration(im, iter):
     if (A == 1 && B >= 2 && B <= 6 && m1 == 0 && m2 == 0) {
     M2(i,j) = 1;
     }
-    } 
+    }
     }
     """
     weave.inline(expr, ["I", "iter", "M"])
