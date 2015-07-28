@@ -33,7 +33,7 @@ def create_graph_nodes(skeleton, eroded, img):
     print("Found {} nodes".format(len(g.nodes)))
     return g
 
-def read_maze(img):
+def read_maze(img, select_start_end):
     img2 = img.copy()
 
     b,g,r = cv2.split(img)
@@ -45,19 +45,23 @@ def read_maze(img):
     thresh_r = cv2.bitwise_and(cv2.threshold(r, 200, 255, cv2.THRESH_BINARY)[1], thresh_s)
     thresh_g = cv2.bitwise_and(cv2.threshold(g, 200, 255, cv2.THRESH_BINARY)[1], thresh_s)
 
-    start, end = find_start_end(thresh_r, thresh_g)
-    if start == None:
-        print("Unable to find start location")
-        return None
-    cv2.circle(img2, start, 25, (0, 0, 0), 1, cv2.LINE_AA)
-    if end == None:
-        print("Unable to find end location")
-        return None
-    cv2.circle(img2, end, 25, (0, 0, 0), 1, cv2.LINE_AA)
+    start = end = None
+    if select_start_end == False:
+        start, end = find_start_end(thresh_r, thresh_g)
+        if start == None:
+            print("Unable to find start location")
+            return None
+        cv2.circle(img2, start, 25, (0, 0, 0), 1, cv2.LINE_AA)
+        if end == None:
+            print("Unable to find end location")
+            return None
+        cv2.circle(img2, end, 25, (0, 0, 0), 1, cv2.LINE_AA)
 
     thresh_v = cv2.bitwise_and(cv2.threshold(v, 254, 255, cv2.THRESH_BINARY)[1], cv2.bitwise_not(cv2.bitwise_or(thresh_r, thresh_g)))
     thresh_v_eroded = cv2.erode(thresh_v, np.ones((3,3), np.uint8))
     thresh_v_skeleton = skeletonize.skeletonize_zhang_shuen(thresh_v)
+    #thresh_v_skeleton = cv2.resize(skeletonize.skeletonize_zhang_shuen(cv2.resize(thresh_v, (0,0), fx=0.5, fy=0.5)), (0,0), fx=2, fy=2)
+    #thresh_v_skeleton = skeletonize.skeletonize_zhang_shuen(cv2.threshold(thresh_v_skeleton, 1, 255, cv2.THRESH_BINARY)[1])
     cv2.imshow("lines", thresh_v_skeleton)
 
     g = create_graph_nodes(thresh_v_skeleton, thresh_v_eroded, img2)

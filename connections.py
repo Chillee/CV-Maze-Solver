@@ -1,4 +1,5 @@
 import numpy as np
+import sys
 import cv2
 
 def bresenham_line(a, b):
@@ -34,6 +35,10 @@ def check_LOS(img, a, b):
             return False
     return True
 
+num_clicks = 0
+start_ = None
+end_ = None
+
 def get_connections(g, skeleton, eroded, start, end, img):
     hier, contours, hierarchy = cv2.findContours(skeleton.copy(),cv2.RETR_CCOMP,cv2.CHAIN_APPROX_SIMPLE )
 
@@ -42,6 +47,26 @@ def get_connections(g, skeleton, eroded, start, end, img):
     areas = sorted(areas, reverse=True)
 
     tree = g.build_kd_tree()
+
+    if start is None or end is None:
+        def mouse_callback(event, x, y, flags, param):
+            global start_, end_, num_clicks
+            if event == cv2.EVENT_LBUTTONUP:
+                if num_clicks == 0:
+                    start_ = (x, y)
+                elif num_clicks == 1:
+                    end_ = (x, y)
+                    cv2.setMouseCallback("image", lambda e, x, y, f, p: None, None)
+                num_clicks += 1
+        #let the user pick the start and end points
+        cv2.imshow("image", img)
+        cv2.setMouseCallback("image", mouse_callback, (num_clicks, start, end))
+        while num_clicks != 2:
+            if cv2.waitKey(10) == ord('q'):
+                cv2.destroyAllWindows()
+                sys.exit(0)
+        start = start_
+        end = end_
 
     node_pos, nodes = tree.query(np.array([[start[0], start[1]], [end[0], end[1]]]))
     start = nodes[0]
