@@ -1,3 +1,5 @@
+#!/usr/bin/python2
+
 import cv2
 import time
 import mazereader
@@ -32,5 +34,7 @@ if ret != None:
     print("Time: {}".format(end_time - start_time))
     cv2.imshow("image_solved", img)
     if __name__ == "__main__":
-        cv2.waitKey(0)
+        while True:
+            if cv2.waitKey(10) == ord('q'):
+                break
     cv2.destroyAllWindows()
