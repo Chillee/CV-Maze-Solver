@@ -16,7 +16,7 @@ def bresenham_line(a, b):
             yield (x, y)
             err -= dy
             if err < 0:
-                y += y
+                y += sy
                 err += dx
             x += sx
     else:
@@ -35,10 +35,6 @@ def check_los(img, a, b):
         if img[y, x] == 0:
             return False
     return True
-
-num_clicks = 0
-start_ = None
-end_ = None
 
 
 def get_connections(g, skeleton, eroded, img):
