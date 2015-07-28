@@ -62,9 +62,8 @@ def read_maze(img, select_start_end):
     thresh_v_skeleton = skeletonize.skeletonize_zhang_shuen(thresh_v)
     #thresh_v_skeleton = cv2.resize(skeletonize.skeletonize_zhang_shuen(cv2.resize(thresh_v, (0,0), fx=0.5, fy=0.5)), (0,0), fx=2, fy=2)
     #thresh_v_skeleton = skeletonize.skeletonize_zhang_shuen(cv2.threshold(thresh_v_skeleton, 1, 255, cv2.THRESH_BINARY)[1])
-    cv2.imshow("lines", thresh_v_skeleton)
 
     g = create_graph_nodes(thresh_v_skeleton, thresh_v_eroded, img2)
-    start, end = connections.get_connections(g, thresh_v_skeleton, thresh_v_eroded, start, end, img2)
+    connections.get_connections(g, thresh_v_skeleton, thresh_v_eroded, img2)
 
     return img2, g, start, end

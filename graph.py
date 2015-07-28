@@ -9,10 +9,13 @@ class Node(object):
 
 class Graph(object):
     def __init__(self):
+        self.tree = None
+        self.tree_changed = True
         self.nodes = []
         self.connections = []
 
     def add_node(self, node):
+        self.tree_changed = True
         self.nodes.append(node)
         return len(self.nodes) - 1
 
@@ -22,7 +25,10 @@ class Graph(object):
         self.connections.append((a,b, d))
 
     def build_kd_tree(self):
-        return scipy.spatial.KDTree(np.array([list(node.pos) for node in self.nodes]))
+        if self.tree_changed or self.tree is None:
+            self.tree_chnaged = False
+            self.tree = scipy.spatial.KDTree(np.array([list(node.pos) for node in self.nodes]))
+        return self.tree
 
     def dijkstra(self, start, end):
         dists = [float("inf") for i in self.nodes]
