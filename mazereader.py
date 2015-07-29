@@ -1,4 +1,5 @@
 import numpy as np
+import random
 import cv2
 import graph
 import skeletonize
@@ -71,9 +72,15 @@ def read_maze(img, select_start_end):
     connections.get_connections(g, thresh_v_skeleton, thresh_v_eroded)
     g.split_long_edges()
 
+    group_colors = {}
     for node in g.nodes:
-        cv2.circle(img2, (node.pos[0], node.pos[1]), 3, (0, 0, 0), -1,
-                   cv2.LINE_AA)
+        if node.group not in group_colors:
+            group_colors[node.group] = (
+                random.randint(0, 255),
+                random.randint(0, 255),
+                random.randint(0, 255))
+        cv2.circle(img2, (node.pos[0], node.pos[1]), 3,
+                   group_colors[node.group], -1, cv2.LINE_AA)
     for a, b, d in g.connections:
         cv2.line(img2, g.nodes[a].pos, g.nodes[b].pos,
                  (0, 255, 0), 1, cv2.LINE_AA)
