@@ -13,7 +13,7 @@ def boundingBox(img):
     areas = sorted(areas)
     bigContour = contours[areas[-1][1]]
     x,y,w,h = cv2.boundingRect(bigContour)
-    cv2.rectangle(img,(x,y),(x+w,y+h),(0,255,0),2)   
+    cv2.rectangle(img,(x,y),(x+w,y+h),(0,255,0),2)
     #img = cv2.drawContours(img, [bigContour], 0, (0, 0, 0), -1)
 
     return img
@@ -49,12 +49,12 @@ def findAvgColumn(img):
 def processimage(img, sizeMult):
     img = cv2.resize(img, (0, 0), fx=sizeMult, fy=sizeMult)
     img = threshold(img)
-    findAvgColumn(img)
+    #findAvgColumn(img)
 
     #cv2.imshow("img", img)
     #img = boundingBox(img)
-    #img = cv2.erode(img, (5, 5))
-    #img = cv2.medianBlur(img, 3)"""
+    img = cv2.erode(img, (5, 5))
+    img = cv2.medianBlur(img, 3)
     img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
     return img
 

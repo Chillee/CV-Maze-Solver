@@ -58,4 +58,4 @@ target/
 
 .DS_Store
 ._.DS_Store
-
+*.c

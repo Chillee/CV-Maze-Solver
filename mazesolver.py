@@ -10,19 +10,27 @@ import processimage
 
 parser = argparse.ArgumentParser(description='Solve a maze from an image')
 parser.add_argument('image', help='Image of maze to solve')
-parser.add_argument('--select', '-s',
-                    dest='select', action='store_true',
+parser.add_argument('--manual', '-m',
+                    dest='manual', action='store_true',
                     help='Manually select start and end points\
                      instead of automatically detecting them')
+parser.add_argument("--handdrawn", '-d',
+                    dest='handdrawn', action='store_true',
+                    help='Preprocess the image for a hand-drawn maze')
+parser.add_argument("--scale", '-s',
+                    dest='scale', type=float, default=1,
+                    help='Scale factor to scale the image by before solving')
 args = parser.parse_args()
 
 img = cv2.imread(args.image)
 if img is None:
     print("Unable to load image file")
     sys.exit(-1)
+img = cv2.resize(img, (0, 0), fx=args.scale, fy=args.scale)
 start_time = time.time()
-img = processimage.processimage(img, 1)
-ret = mazereader.read_maze(img, args.select)
+if args.handdrawn:
+    img = processimage.processimage(img, 1)
+ret = mazereader.read_maze(img, args.manual)
 start = end = None
 num_clicks = 0
 if ret is not None:

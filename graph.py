@@ -1,3 +1,4 @@
+import copy
 import numpy as np
 import scipy.spatial
 from Queue import PriorityQueue
@@ -7,6 +8,11 @@ class Node(object):
     def __init__(self, pos):
         self.pos = pos
         self.connections = []
+
+    def dist(self, other):
+        dx = self.pos[0] - other.pos[0]
+        dy = self.pos[1] - other.pos[1]
+        return np.sqrt(dx * dx + dy * dy)
 
 
 class Graph(object):
@@ -25,6 +31,29 @@ class Graph(object):
         self.nodes[a].connections.append((b, d))
         self.nodes[b].connections.append((a, d))
         self.connections.append((a, b, d))
+
+    def split_long_edges(self):
+        for a, b, dist in copy.copy(self.connections):
+            if dist > 25:
+                # split into multiple nodes
+                num_nodes = int(dist / 25 + 1)
+                last_node = b
+                for i in range(0, num_nodes):
+                    # lerp the positions
+                    alpha = float(i) / num_nodes
+                    inv_alpha = 1 - alpha
+                    x = int(alpha * self.nodes[a].pos[0] +
+                            inv_alpha * self.nodes[b].pos[0])
+                    y = int(alpha * self.nodes[a].pos[1] +
+                            inv_alpha * self.nodes[b].pos[1])
+                    print(x, y)
+                    new_node = self.add_node(Node((x, y)))
+                    self.link_nodes(new_node, last_node,
+                                    self.nodes[last_node].dist(
+                                        self.nodes[new_node]))
+                    last_node = new_node
+                self.link_nodes(last_node, b,
+                                self.nodes[last_node].dist(self.nodes[b]))
 
     def build_kd_tree(self):
         if self.tree_changed or self.tree is None:

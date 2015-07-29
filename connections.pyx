@@ -1,6 +1,7 @@
 from cpython cimport array as c_array
 from cython.view cimport array as cvarray
 from array import array
+from Queue import PriorityQueue
 import numpy as np
 cimport numpy as np
 cimport cython
@@ -10,8 +11,7 @@ import cv2
 @cython.infer_types(True)
 def get_connections(g,
                     np.ndarray[np.uint8_t, ndim=2] skeleton,
-                    np.ndarray[np.uint8_t, ndim=2] eroded,
-                    np.ndarray[np.uint8_t, ndim=3] img):
+                    np.ndarray[np.uint8_t, ndim=2] eroded):
     skeleton = cv2.resize(skeleton, (0, 0), fx=0.5, fy=0.5)
     cdef int height = skeleton.shape[0]
     cdef int width = skeleton.shape[1]
@@ -26,13 +26,31 @@ def get_connections(g,
     for idx, node in enumerate(g.nodes):
         x = int(node.pos[0] / 2)
         y = int(node.pos[1] / 2)
-        visited[y-1:y+2, x-1:x+2, 1] = 255
-        node_map[y-1:y+2, x-1:x+2] = idx
+        #find the closest section of the skeleton
+        stack = PriorityQueue()
+        stack.put((0, x, y))
+        num_points = 0
+        while True:
+            dist, x, y = stack.get()
+            if skeleton[y, x] != 0:
+                visited[y, x, 1] = 255
+                node_map[y, x] = idx
+                num_points += 1
+                if num_points == 4:
+                    break
+            for dx in range(-1, 2):
+                for dy in range(-1, 2):
+                    xx = x + dx
+                    yy = y + dy
+                    if xx >= 0 and xx < width and yy >= 0 and yy < height:
+                        stack.put((dist + 1, xx, yy))
+
 
     pixel_stack_pos = [array('i', [int(g.nodes[0].pos[0] / 2), int(g.nodes[0].pos[1] / 2)])]
     pixel_stack_node = [0]
 
-    #cdef int[2] pos
+    cdef int[2] pos
+    cdef int i = 0
     while len(pixel_stack_pos) > 0:
         pos = pixel_stack_pos.pop()
         cur_node = pixel_stack_node.pop()
@@ -42,14 +60,17 @@ def get_connections(g,
 
         visited[y, x, 0] = 0
 
+        i += 1
+        # if i % 10 == 0:
+        #     cv2.imshow("visited", visited)
+        #     cv2.waitKey(1)
+
         if visited[y, x, 1] != 0:
             node = node_map[y, x]
             if node != cur_node:
                 if cur_node not in [e[0] for e in g.nodes[node].connections]:
                     xx = g.nodes[node].pos[0] - g.nodes[cur_node].pos[0]
                     yy = g.nodes[node].pos[1] - g.nodes[cur_node].pos[1]
-                    cv2.line(img, g.nodes[node].pos, g.nodes[cur_node].pos,
-                             (0, 255, 0), 1, cv2.LINE_AA)
                     g.link_nodes(node, cur_node, np.sqrt(xx * xx + yy * yy))
                 cur_node = node
 
