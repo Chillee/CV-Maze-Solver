@@ -32,7 +32,7 @@ def get_connections(g,
     pixel_stack_pos = [array('i', [int(g.nodes[0].pos[0] / 2), int(g.nodes[0].pos[1] / 2)])]
     pixel_stack_node = [0]
 
-    #cdef int[2] pos
+    #   cdef int[2] pos
     while len(pixel_stack_pos) > 0:
         pos = pixel_stack_pos.pop()
         cur_node = pixel_stack_node.pop()

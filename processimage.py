@@ -1,7 +1,13 @@
 import cv2
+import numpy as np
 
 def threshold(img):
-    img = cv2.adaptiveThreshold(cv2.cvtColor(img, cv2.COLOR_BGR2GRAY), 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 4)
+    #img = cv2.adaptiveThreshold(cv2.cvtColor(img, cv2.COLOR_BGR2GRAY), 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 4)
+    PAPER_MIN = np.array([0, 0, 100],np.uint8)
+    PAPER_MAX = np.array([255, 255, 255],np.uint8)
+    img = cv2.inRange(img, PAPER_MIN, PAPER_MAX)
+    cv2.imshow("hue", img)
+    cv2.waitKey(0)
     return img
 
 def boundingBox(img):
@@ -41,21 +47,32 @@ def findAvgColumn(img):
             columnPos.append([idx])
     if(len(columnPos[-1]) == 1):
         columnPos.pop()
-    columnLength = [x[1]-x[0] for x in columnPos]
-    columnLength = sorted(columnLength)
-    print columnLength[len(columnLength)/2]
+    whiteColumnLength = [x[1]-x[0] for x in columnPos]
+    blackColumnLength = [columnPos[idx+1][0] - columnPos[idx][1] for idx, x in enumerate(columnPos[:-1])]
+    whiteColumnLength = sorted(whiteColumnLength)
+    return whiteColumnLength[len(whiteColumnLength)/2], blackColumnLength[len(blackColumnLength)/2]
 
 
-def processimage(img, sizeMult):
-    img = cv2.resize(img, (0, 0), fx=sizeMult, fy=sizeMult)
+def processimage(img, sizeMult=None):
     img = threshold(img)
-    findAvgColumn(img)
-
-    #cv2.imshow("img", img)
     #img = boundingBox(img)
-    #img = cv2.erode(img, (5, 5))
-    #img = cv2.medianBlur(img, 3)"""
+
+    img = cv2.erode(img, (7, 7))
+    img = cv2.medianBlur(img, 3)
+
+    cv2.imshow("img", img)
+    #img = boundingBox(img)
+    
+    if not sizeMult:
+        whiteColSize, blackColSize = findAvgColumn(img)
+        print whiteColSize, blackColSize
+        sizeMult = 30.0/whiteColSize
+    print sizeMult
+    img = cv2.resize(img, (0, 0), fx=sizeMult, fy=sizeMult)
+
     img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
+
+
     return img
 
 if __name__ == "__main__":
