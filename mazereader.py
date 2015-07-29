@@ -30,8 +30,6 @@ def create_graph_nodes(skeleton, eroded, img):
     for corner in corners:
         if eroded[corner[0][1], corner[0][0]] != 0:
             node = graph.Node((corner[0][0], corner[0][1]))
-            cv2.circle(skeleton, (node.pos[0], node.pos[1]), 3, (0, 0, 0), -1,
-                       cv2.LINE_AA)
             cv2.circle(img, (node.pos[0], node.pos[1]), 3, (0, 0, 0), -1,
                        cv2.LINE_AA)
             g.add_node(node)

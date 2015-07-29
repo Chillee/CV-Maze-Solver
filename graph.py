@@ -28,9 +28,9 @@ class Graph(object):
 
     def build_kd_tree(self):
         if self.tree_changed or self.tree is None:
-            self.tree_chnaged = False
+            self.tree_changed = False
             self.tree = scipy.spatial.KDTree(
-                np.array([list(node.pos) for node in self.nodes]))
+                np.array([node.pos for node in self.nodes]))
         return self.tree
 
     def dijkstra(self, start, end):

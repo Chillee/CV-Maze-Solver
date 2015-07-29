@@ -6,6 +6,7 @@ import time
 import mazereader
 import argparse
 import sys
+import processimage
 
 parser = argparse.ArgumentParser(description='Solve a maze from an image')
 parser.add_argument('image', help='Image of maze to solve')
@@ -20,12 +21,15 @@ if img is None:
     print("Unable to load image file")
     sys.exit(-1)
 start_time = time.time()
+img = processimage.processimage(img, 1)
 ret = mazereader.read_maze(img, args.select)
 start = end = None
 num_clicks = 0
 if ret is not None:
     img2, graph, start, end = ret
     cv2.imshow("image", img2)
+    end_time = time.time()
+    print("Time: {}".format(end_time - start_time))
 
     while True:
         if start is None or end is None:
@@ -38,9 +42,9 @@ if ret is not None:
                 yy = y / 0.75
                 global start, end, num_clicks
                 if event == cv2.EVENT_LBUTTONUP:
-                    #cv2.circle(img2_copy, (x, y), 5, (255, 0, 255), -1,
-                    #           cv2.LINE_AA)
-                    #cv2.imshow("image", img2_copy)
+                    # cv2.circle(img2_copy, (x, y), 5, (255, 0, 255), -1,
+                    #            cv2.LINE_AA)
+                    # cv2.imshow("image", img2_copy)
                     if num_clicks == 0:
                         start = (xx, yy)
                     elif num_clicks == 1:
@@ -73,8 +77,7 @@ if ret is not None:
                 cv2.line(img_copy, last.pos, node.pos, (255, 0, 0), 2,
                          cv2.LINE_AA)
             last = node
-        end_time = time.time()
-        print("Time: {}".format(end_time - start_time))
+
         cv2.imshow("image_solved",
                    cv2.resize(img_copy, (0, 0), fx=0.75, fy=0.75))
         start = None
