@@ -18,7 +18,7 @@ parser.add_argument("--handdrawn", '-d',
                     dest='handdrawn', action='store_true',
                     help='Preprocess the image for a hand-drawn maze')
 parser.add_argument("--scale", '-s',
-                    dest='scale', type=float, default=1,
+                    dest='scale', type=float, default=None,
                     help='Scale factor to scale the image by before solving')
 args = parser.parse_args()
 
@@ -26,10 +26,10 @@ origImg = cv2.imread(args.image)
 if origImg is None:
     print("Unable to load image file")
     sys.exit(-1)
-img = cv2.resize(origImg, (0, 0), fx=args.scale, fy=args.scale)
 start_time = time.time()
+img = origImg.copy()
 if args.handdrawn:
-    img = processimage.processimage(img, 1)
+    img = processimage.processimage(origImg, args.scale)
 ret = mazereader.read_maze(img, args.manual)
 start = end = None
 num_clicks = 0
