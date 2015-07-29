@@ -31,11 +31,18 @@ def get_connections(g,
     pixel_stack_pos = [array('i', [int(g.nodes[0].pos[0] / 2), int(g.nodes[0].pos[1] / 2)])]
     pixel_stack_node = [0]
 
+    unprocessed_nodes = range(0, len(g.nodes))
+
+    cdef int group = 0
     #cdef int[2] pos
     cdef int i = 0
     while len(pixel_stack_pos) > 0:
         pos = pixel_stack_pos.pop()
         cur_node = pixel_stack_node.pop()
+
+        g.nodes[cur_node].group = group
+        if cur_node in unprocessed_nodes:
+            unprocessed_nodes.remove(cur_node)
 
         x = pos[0]
         y = pos[1]
@@ -64,3 +71,9 @@ def get_connections(g,
                     if visited[yy, xx, 0] != 0:
                         pixel_stack_pos.append(array('i', [xx, yy]))
                         pixel_stack_node.append(cur_node)
+
+        if len(pixel_stack_pos) == 0 and len(unprocessed_nodes) > 0:
+            group += 1
+            n = unprocessed_nodes.pop()
+            pixel_stack_pos.append(array('i', [int(g.nodes[0].pos[0] / 2), int(g.nodes[0].pos[1] / 2)]))
+            pixel_stack_node.append(n)

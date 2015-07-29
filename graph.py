@@ -5,7 +5,8 @@ from Queue import PriorityQueue
 
 
 class Node(object):
-    def __init__(self, pos):
+    def __init__(self, pos, group=0):
+        self.group = group
         self.pos = pos
         self.connections = []
 
@@ -17,13 +18,10 @@ class Node(object):
 
 class Graph(object):
     def __init__(self):
-        self.tree = None
-        self.tree_changed = True
         self.nodes = []
         self.connections = []
 
     def add_node(self, node):
-        self.tree_changed = True
         self.nodes.append(node)
         return len(self.nodes) - 1
 
@@ -46,7 +44,6 @@ class Graph(object):
                             inv_alpha * self.nodes[b].pos[0])
                     y = int(alpha * self.nodes[a].pos[1] +
                             inv_alpha * self.nodes[b].pos[1])
-                    print(x, y)
                     new_node = self.add_node(Node((x, y)))
                     self.link_nodes(new_node, last_node,
                                     self.nodes[last_node].dist(
@@ -56,11 +53,8 @@ class Graph(object):
                                 self.nodes[last_node].dist(self.nodes[b]))
 
     def build_kd_tree(self):
-        if self.tree_changed or self.tree is None:
-            self.tree_changed = False
-            self.tree = scipy.spatial.KDTree(
-                np.array([node.pos for node in self.nodes]))
-        return self.tree
+        return scipy.spatial.KDTree(
+            np.array([node.pos for node in self.nodes]))
 
     def dijkstra(self, start, end):
         dists = [float("inf") for i in self.nodes]

@@ -66,7 +66,7 @@ def processimage(img, sizeMult=None, handdrawn = False):
     cv2.imshow("img", img)
     cv2.destroyAllWindows()
     #img = boundingBox(img)
-    
+
     if not sizeMult:
         whiteColSize, blackColSize = findAvgColumn(img)
         print whiteColSize, blackColSize
