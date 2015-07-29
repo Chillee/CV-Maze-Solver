@@ -42,6 +42,7 @@ if ret is not None:
 
     pathImg = cv2.resize(origImg.copy(), (img2.shape[1], img2.shape[0]))
     while True:
+
         if start is None or end is None:
             print("Select the start and end points")
             num_clicks = 0
@@ -68,6 +69,9 @@ if ret is not None:
             cv2.imshow("origImg", pathImg)
             cv2.setMouseCallback("origImg", mouse_callback,
                                  (num_clicks, start, end))
+
+            pathImg = cv2.resize(origImg.copy(),
+                                 (img2.shape[1], img2.shape[0]))
             while num_clicks != 2:
                 if cv2.waitKey(10) == ord('q'):
                     cv2.destroyAllWindows()
