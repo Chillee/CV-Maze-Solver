@@ -28,8 +28,8 @@ if origImg is None:
     sys.exit(-1)
 start_time = time.time()
 img = origImg.copy()
-if args.handdrawn:
-    img = processimage.processimage(origImg, args.scale)
+
+img = processimage.processimage(origImg, args.scale, args.handdrawn)
 ret = mazereader.read_maze(img, args.manual)
 start = end = None
 num_clicks = 0
@@ -66,8 +66,8 @@ if ret is not None:
                     num_clicks += 1
             # let the user pick the start and end points
             cv2.imshow("image", img2)
-            cv2.imshow("origImg", pathImg)
-            cv2.setMouseCallback("origImg", mouse_callback,
+            cv2.imshow("image_solved", pathImg)
+            cv2.setMouseCallback("image_solved", mouse_callback,
                                  (num_clicks, start, end))
 
             pathImg = cv2.resize(origImg.copy(),

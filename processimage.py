@@ -2,12 +2,13 @@ import cv2
 import numpy as np
 
 def threshold(img):
-    #img = cv2.adaptiveThreshold(cv2.cvtColor(img, cv2.COLOR_BGR2GRAY), 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 4)
-    PAPER_MIN = np.array([0, 0, 100],np.uint8)
-    PAPER_MAX = np.array([255, 255, 255],np.uint8)
-    img = cv2.inRange(img, PAPER_MIN, PAPER_MAX)
+    img = cv2.adaptiveThreshold(cv2.cvtColor(img, cv2.COLOR_BGR2GRAY), 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 11, 4)
+    #PAPER_MIN = np.array([0, 0, 100],np.uint8)
+    #PAPER_MAX = np.array([255, 255, 255],np.uint8)
+    #img = cv2.inRange(img, PAPER_MIN, PAPER_MAX)
     cv2.imshow("hue", img)
     cv2.waitKey(0)
+    cv2.destroyAllWindows()
     return img
 
 def boundingBox(img):
@@ -53,20 +54,23 @@ def findAvgColumn(img):
     return whiteColumnLength[len(whiteColumnLength)/2], blackColumnLength[len(blackColumnLength)/2]
 
 
-def processimage(img, sizeMult=None):
+def processimage(img, sizeMult=None, handdrawn = False):
     img = threshold(img)
     #img = boundingBox(img)
-
-    img = cv2.erode(img, (7, 7))
-    img = cv2.medianBlur(img, 3)
+    MIN_COLUMN_SIZE = 15.0
+    if handdrawn:
+        img = cv2.erode(img, (7, 7))
+        img = cv2.medianBlur(img, 3)
+        MIN_COLUMN_SIZE = 30.0
 
     cv2.imshow("img", img)
+    cv2.destroyAllWindows()
     #img = boundingBox(img)
     
     if not sizeMult:
         whiteColSize, blackColSize = findAvgColumn(img)
         print whiteColSize, blackColSize
-        sizeMult = 30.0/whiteColSize
+        sizeMult = MIN_COLUMN_SIZE/whiteColSize
     print sizeMult
     img = cv2.resize(img, (0, 0), fx=sizeMult, fy=sizeMult)
 
