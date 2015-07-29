@@ -1,7 +1,6 @@
 from cpython cimport array as c_array
 from cython.view cimport array as cvarray
 from array import array
-from Queue import PriorityQueue
 import numpy as np
 cimport numpy as np
 cimport cython
@@ -11,7 +10,8 @@ import cv2
 @cython.infer_types(True)
 def get_connections(g,
                     np.ndarray[np.uint8_t, ndim=2] skeleton,
-                    np.ndarray[np.uint8_t, ndim=2] eroded):
+                    np.ndarray[np.uint8_t, ndim=2] eroded,
+                    np.ndarray[np.uint8_t, ndim=3] img):
     skeleton = cv2.resize(skeleton, (0, 0), fx=0.5, fy=0.5)
     cdef int height = skeleton.shape[0]
     cdef int width = skeleton.shape[1]
@@ -26,30 +26,13 @@ def get_connections(g,
     for idx, node in enumerate(g.nodes):
         x = int(node.pos[0] / 2)
         y = int(node.pos[1] / 2)
-        #find the closest section of the skeleton
-        stack = PriorityQueue()
-        stack.put((0, x, y))
-        num_points = 0
-        while True:
-            dist, x, y = stack.get()
-            if skeleton[y, x] != 0:
-                visited[y, x, 1] = 255
-                node_map[y, x] = idx
-                num_points += 1
-                if num_points == 4:
-                    break
-            for dx in range(-1, 2):
-                for dy in range(-1, 2):
-                    xx = x + dx
-                    yy = y + dy
-                    if xx >= 0 and xx < width and yy >= 0 and yy < height:
-                        stack.put((dist + 1, xx, yy))
-
+        visited[y-1:y+2, x-1:x+2, 1] = 255
+        node_map[y-1:y+2, x-1:x+2] = idx
 
     pixel_stack_pos = [array('i', [int(g.nodes[0].pos[0] / 2), int(g.nodes[0].pos[1] / 2)])]
     pixel_stack_node = [0]
 
-    cdef int[2] pos
+    #cdef int[2] pos
     cdef int i = 0
     while len(pixel_stack_pos) > 0:
         pos = pixel_stack_pos.pop()
