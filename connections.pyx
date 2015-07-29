@@ -10,8 +10,7 @@ import cv2
 @cython.infer_types(True)
 def get_connections(g,
                     np.ndarray[np.uint8_t, ndim=2] skeleton,
-                    np.ndarray[np.uint8_t, ndim=2] eroded,
-                    np.ndarray[np.uint8_t, ndim=3] img):
+                    np.ndarray[np.uint8_t, ndim=2] eroded):
     skeleton = cv2.resize(skeleton, (0, 0), fx=0.5, fy=0.5)
     cdef int height = skeleton.shape[0]
     cdef int width = skeleton.shape[1]
