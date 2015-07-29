@@ -6,6 +6,7 @@ import time
 import mazereader
 import argparse
 import sys
+import processimage
 
 parser = argparse.ArgumentParser(description='Solve a maze from an image')
 parser.add_argument('image', help='Image of maze to solve')
@@ -15,27 +16,32 @@ parser.add_argument('--select', '-s',
                      instead of automatically detecting them')
 args = parser.parse_args()
 
-img = cv2.imread(args.image)
-if img is None:
+origImg = cv2.imread(args.image)
+if origImg is None:
     print("Unable to load image file")
     sys.exit(-1)
+sizeMult = .4
+img = processimage.processimage(origImg.copy(), sizeMult)
 start_time = time.time()
+
 ret = mazereader.read_maze(img, args.select)
 start = end = None
 num_clicks = 0
+
 if ret is not None:
     img2, graph, start, end = ret
     cv2.imshow("image", img2)
 
+    pathImg = cv2.resize(origImg.copy(), (img2.shape[1], img2.shape[0]))
     while True:
         if start is None or end is None:
             print("Select the start and end points")
             num_clicks = 0
-            img2_copy = cv2.resize(img2.copy(), (0, 0), fx=0.75, fy=0.75)
+            #img2_copy = cv2.resize(img2.copy(), (0, 0), fx=.75, fy=.75)
 
             def mouse_callback(event, x, y, flags, param):
-                xx = x / 0.75
-                yy = y / 0.75
+                xx = x
+                yy = y
                 global start, end, num_clicks
                 if event == cv2.EVENT_LBUTTONUP:
                     #cv2.circle(img2_copy, (x, y), 5, (255, 0, 255), -1,
@@ -50,8 +56,9 @@ if ret is not None:
                                              None)
                     num_clicks += 1
             # let the user pick the start and end points
-            cv2.imshow("image", img2_copy)
-            cv2.setMouseCallback("image", mouse_callback,
+            cv2.imshow("image", img2)
+            cv2.imshow("origImg", pathImg)
+            cv2.setMouseCallback("origImg", mouse_callback,
                                  (num_clicks, start, end))
             while num_clicks != 2:
                 if cv2.waitKey(10) == ord('q'):
@@ -70,13 +77,12 @@ if ret is not None:
         for node_id in path:
             node = graph.nodes[node_id]
             if last is not None:
-                cv2.line(img_copy, last.pos, node.pos, (255, 0, 0), 2,
+                cv2.line(pathImg, last.pos, node.pos, (255, 0, 0), 2,
                          cv2.LINE_AA)
             last = node
         end_time = time.time()
         print("Time: {}".format(end_time - start_time))
-        cv2.imshow("image_solved",
-                   cv2.resize(img_copy, (0, 0), fx=0.75, fy=0.75))
+        cv2.imshow("origImg", pathImg)
         start = None
         end = None
         if __name__ != "__main__":
