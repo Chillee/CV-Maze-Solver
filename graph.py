@@ -44,7 +44,7 @@ class Graph(object):
                             inv_alpha * self.nodes[b].pos[0])
                     y = int(alpha * self.nodes[a].pos[1] +
                             inv_alpha * self.nodes[b].pos[1])
-                    new_node = self.add_node(Node((x, y)))
+                    new_node = self.add_node(Node((x, y), self.nodes[a].group))
                     self.link_nodes(new_node, last_node,
                                     self.nodes[last_node].dist(
                                         self.nodes[new_node]))

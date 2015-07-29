@@ -75,5 +75,5 @@ def get_connections(g,
         if len(pixel_stack_pos) == 0 and len(unprocessed_nodes) > 0:
             group += 1
             n = unprocessed_nodes.pop()
-            pixel_stack_pos.append(array('i', [int(g.nodes[0].pos[0] / 2), int(g.nodes[0].pos[1] / 2)]))
+            pixel_stack_pos.append(array('i', [int(g.nodes[n].pos[0] / 2), int(g.nodes[n].pos[1] / 2)]))
             pixel_stack_node.append(n)
