@@ -6,12 +6,6 @@ def threshold(img):
     #PAPER_MIN = np.array([0, 0, 100],np.uint8)
     #PAPER_MAX = np.array([255, 255, 255],np.uint8)
     #img = cv2.inRange(img, PAPER_MIN, PAPER_MAX)
-<<<<<<< HEAD
-=======
-    #cv2.imshow("hue", img)
-    #cv2.waitKey(0)
-    cv2.destroyAllWindows()
->>>>>>> a053e9664eed5ab5c89e79cbdcf4296e3ffb6195
     return img
 
 def boundingBox(img):

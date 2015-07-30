@@ -106,15 +106,7 @@ if ret is not None:
         # solve the maze
         path = graph.dijkstra(start, end)
         last = None
-<<<<<<< HEAD
-        for node_id in path:
-            node = graph.nodes[node_id]
-            if last is not None:
-                cv2.line(pathImg, (int(last.pos[0]*dispScale), int(last.pos[1]*dispScale)), (int(node.pos[0]*dispScale), int(node.pos[1]*dispScale)), (255, 0, 0), 2, cv2.LINE_AA)
-            last = node
 
-        cv2.imshow("image_solved", pathImg)
-=======
         img_copy = img.copy()
         print("Drawing lines")
         for a, b in zip(path, path[1:]):
@@ -122,9 +114,11 @@ if ret is not None:
                 pixels = graph.connections[(a, b)][1]
                 for pos0, pos1 in zip(pixels, pixels[1:]):
                     # pathImg[y, x] = np.array([255, 0, 0], dtype=np.uint8)
-                    cv2.line(pathImg, pos0*dispScale, pos1*dispScale, (255, 0, 0), 2,
+                    cv2.line(pathImg, (int(pos0[0]*dispScale), int(pos0[1]*dispScale)), (int(pos1[0]*dispScale), int(pos1[1]*dispScale)), (255, 0, 0), 1,
                              cv2.LINE_AA)
             else:
+                last = graph.nodes[a]
+                node = graph.nodes[b]
                 cv2.line(pathImg, (int(last.pos[0]*dispScale), int(last.pos[1]*dispScale)), (int(node.pos[0]*dispScale), int(node.pos[1]*dispScale)), (255, 0, 0), 2, cv2.LINE_AA)
         print("Done")
 
@@ -132,7 +126,6 @@ if ret is not None:
             cv2.imshow("image_solved",
                        cv2.resize(img_copy, (0, 0), fx=0.75, fy=0.75))
         cv2.imwrite(args.output, pathImg)
->>>>>>> a053e9664eed5ab5c89e79cbdcf4296e3ffb6195
         start = None
         end = None
         if __name__ != "__main__":
