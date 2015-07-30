@@ -37,7 +37,7 @@ def create_graph_nodes(skeleton, eroded, img):
     return g
 
 
-def read_maze(img, select_start_end):
+def read_maze(img):
     img2 = img.copy()
 
     b, g, r = cv2.split(img)
@@ -50,18 +50,6 @@ def read_maze(img, select_start_end):
         cv2.threshold(r, 200, 255, cv2.THRESH_BINARY)[1], thresh_s)
     thresh_g = cv2.bitwise_and(
         cv2.threshold(g, 200, 255, cv2.THRESH_BINARY)[1], thresh_s)
-
-    start = end = None
-    if not select_start_end:
-        start, end = find_start_end(thresh_r, thresh_g)
-        if start is None:
-            print("Unable to find start location")
-            return None
-        cv2.circle(img2, start, 25, (0, 0, 0), 1, cv2.LINE_AA)
-        if end is None:
-            print("Unable to find end location")
-            return None
-        cv2.circle(img2, end, 25, (0, 0, 0), 1, cv2.LINE_AA)
 
     thresh_v = cv2.bitwise_and(
         cv2.threshold(v, 254, 255, cv2.THRESH_BINARY)[1],
@@ -89,4 +77,4 @@ def read_maze(img, select_start_end):
         cv2.line(img2, g.nodes[a].pos, g.nodes[b].pos,
                  (0, 255, 0), 1, cv2.LINE_AA)
 
-    return img2, g, start, end
+    return img2, g
