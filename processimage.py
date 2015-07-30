@@ -6,6 +6,12 @@ def threshold(img):
     #PAPER_MIN = np.array([0, 0, 100],np.uint8)
     #PAPER_MAX = np.array([255, 255, 255],np.uint8)
     #img = cv2.inRange(img, PAPER_MIN, PAPER_MAX)
+<<<<<<< HEAD
+=======
+    #cv2.imshow("hue", img)
+    #cv2.waitKey(0)
+    cv2.destroyAllWindows()
+>>>>>>> a053e9664eed5ab5c89e79cbdcf4296e3ffb6195
     return img
 
 def boundingBox(img):
@@ -66,7 +72,6 @@ def processimage(img, sizeMult=None, handdrawn = False):
         img = cv2.erode(img, (7, 7))
         img = cv2.medianBlur(img, 3)
         MIN_COLUMN_SIZE = 30.0
-        
     #img = boundingBox(img)
 
     if not sizeMult:
@@ -104,5 +109,5 @@ if __name__ == "__main__":
     img = cv2.imread("maze3.png")
     img = cv2.resize(img, (0, 0), fx=.4, fy=.4)
     #cv2.imshow("thresh", preprocess(img))
-    cv2.waitKey(0)
+    #cv2.waitKey(0)
     cv2.destroyAllWindows()
