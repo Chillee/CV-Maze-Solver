@@ -7,6 +7,7 @@ import mazereader
 import argparse
 import sys
 import processimage
+import config
 
 parser = argparse.ArgumentParser(description='Solve a maze from an image')
 parser.add_argument('image', help='Image of maze to solve')
@@ -20,7 +21,20 @@ parser.add_argument("--handdrawn", '-d',
 parser.add_argument("--scale", '-s',
                     dest='scale', type=float, default=None,
                     help='Scale factor to scale the image by before solving')
+parser.add_argument("--output", '-o',
+                    dest='output', default="maze_solved.png",
+                    help='File to write the final solved maze image to')
+parser.add_argument("--nogui", '-n',
+                    dest='nogui', action='store_true',
+                    help='Do not display any images')
+parser.add_argument("--pixellines", '-p',
+                    dest='pixellines', action='store_true',
+                    help='Draw the lines between nodes at pixel\
+                    resolution from the skeleton (can help in\
+                    situations where the lines go through walls)')
 args = parser.parse_args()
+
+config.nogui = args.nogui
 
 origImg = cv2.imread(args.image)
 if origImg is None:
@@ -36,7 +50,8 @@ num_clicks = 0
 
 if ret is not None:
     img2, graph, start, end = ret
-    cv2.imshow("image", img2)
+    if not config.nogui:
+        cv2.imshow("image", img2)
     end_time = time.time()
     print("Time: {}".format(end_time - start_time))
 
@@ -65,10 +80,11 @@ if ret is not None:
                                              None)
                     num_clicks += 1
             # let the user pick the start and end points
-            cv2.imshow("image", img2)
-            cv2.imshow("image_solved", pathImg)
-            cv2.setMouseCallback("image_solved", mouse_callback,
-                                 (num_clicks, start, end))
+            if not config.nogui:
+                cv2.imshow("image", img2)
+                cv2.imshow("image_solved", pathImg)
+                cv2.setMouseCallback("image_solved", mouse_callback,
+                                     (num_clicks, start, end))
 
             pathImg = cv2.resize(origImg.copy(),
                                  (img2.shape[1], img2.shape[0]))
@@ -86,15 +102,23 @@ if ret is not None:
         path = graph.dijkstra(start, end)
         last = None
         img_copy = img.copy()
-        for node_id in path:
-            node = graph.nodes[node_id]
-            if last is not None:
-                cv2.line(pathImg, last.pos, node.pos, (255, 0, 0), 2,
-                         cv2.LINE_AA)
-            last = node
+        print("Drawing lines")
+        for a, b in zip(path, path[1:]):
+            if args.pixellines:
+                pixels = graph.connections[(a, b)][1]
+                for pos0, pos1 in zip(pixels, pixels[1:]):
+                    # pathImg[y, x] = np.array([255, 0, 0], dtype=np.uint8)
+                    cv2.line(pathImg, pos0, pos1, (255, 0, 0), 2,
+                             cv2.LINE_AA)
+            else:
+                cv2.line(pathImg, graph.nodes[a].pos, graph.nodes[b].pos,
+                         (255, 0, 0), 2, cv2.LINE_AA)
+        print("Done")
 
-        cv2.imshow("image_solved",
-                   cv2.resize(img_copy, (0, 0), fx=0.75, fy=0.75))
+        if not config.nogui:
+            cv2.imshow("image_solved",
+                       cv2.resize(img_copy, (0, 0), fx=0.75, fy=0.75))
+        cv2.imwrite(args.output, pathImg)
         start = None
         end = None
         if __name__ != "__main__":

@@ -4,6 +4,7 @@ import cv2
 import graph
 import skeletonize
 import connections
+import config
 
 
 def get_largest_contour_centroid(img):
@@ -67,6 +68,9 @@ def read_maze(img, select_start_end):
         cv2.bitwise_not(cv2.bitwise_or(thresh_r, thresh_g)))
     thresh_v_eroded = cv2.erode(thresh_v, np.ones((3, 3), np.uint8))
     thresh_v_skeleton = skeletonize.skeletonize_zhang_shuen(thresh_v)
+    if not config.nogui:
+        cv2.imshow("skeleton",
+                   cv2.resize(thresh_v_skeleton, (0, 0), fx=0.5, fy=0.5))
 
     g = create_graph_nodes(thresh_v_skeleton, thresh_v_eroded, img2)
     connections.get_connections(g, thresh_v_skeleton, thresh_v_eroded)
@@ -81,7 +85,7 @@ def read_maze(img, select_start_end):
                 random.randint(0, 255))
         cv2.circle(img2, (node.pos[0], node.pos[1]), 3,
                    group_colors[node.group], -1, cv2.LINE_AA)
-    for a, b, d in g.connections:
+    for a, b in g.connections:
         cv2.line(img2, g.nodes[a].pos, g.nodes[b].pos,
                  (0, 255, 0), 1, cv2.LINE_AA)
 

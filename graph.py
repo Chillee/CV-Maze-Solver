@@ -19,19 +19,21 @@ class Node(object):
 class Graph(object):
     def __init__(self):
         self.nodes = []
-        self.connections = []
+        self.connections = {}
 
     def add_node(self, node):
         self.nodes.append(node)
         return len(self.nodes) - 1
 
-    def link_nodes(self, a, b, d=1):
+    def link_nodes(self, a, b, d=1, pixels=[]):
         self.nodes[a].connections.append((b, d))
         self.nodes[b].connections.append((a, d))
-        self.connections.append((a, b, d))
+        self.connections[(a, b)] = (d, pixels)
+        self.connections[(b, a)] = (d, pixels)
 
     def split_long_edges(self):
-        for a, b, dist in copy.copy(self.connections):
+        for a, b in copy.copy(self.connections):
+            dist, pixels = self.connections[(a, b)]
             if dist > 25:
                 # split into multiple nodes
                 num_nodes = int(dist / 25 + 1)
@@ -47,10 +49,15 @@ class Graph(object):
                     new_node = self.add_node(Node((x, y), self.nodes[a].group))
                     self.link_nodes(new_node, last_node,
                                     self.nodes[last_node].dist(
-                                        self.nodes[new_node]))
+                                        self.nodes[new_node]),
+                                    pixels[(len(pixels) * i) / num_nodes:
+                                           (len(pixels) * (i + 1)) / num_nodes]
+                                    )
                     last_node = new_node
                 self.link_nodes(last_node, b,
-                                self.nodes[last_node].dist(self.nodes[b]))
+                                self.nodes[last_node].dist(self.nodes[b]),
+                                pixels[(len(pixels) * (num_nodes - 1)) /
+                                       num_nodes:])
 
     def build_kd_tree(self):
         return scipy.spatial.KDTree(
