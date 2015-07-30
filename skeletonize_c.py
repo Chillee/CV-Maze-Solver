@@ -30,7 +30,11 @@ def thinning_iteration(im, iter, x0, y0, x1, y1):
         }
     }
     """
-    weave.inline(expr, ["I", "iter", "M", "x0", "y0", "x1", "y1"],
-                 extra_compile_args=["-O3", "-fopenmp"],
-                 extra_link_args=["-fopenmp", "-lgomp"])
+    try:
+        weave.inline(expr, ["I", "iter", "M", "x0", "y0", "x1", "y1"],
+                     extra_compile_args=["-O3", "-fopenmp"],
+                     extra_link_args=["-fopenmp", "-lgomp"])
+    except weave.build_tools.CompileError:
+        weave.inline(expr, ["I", "iter", "M", "x0", "y0", "x1", "y1"],
+                     extra_compile_args=["-O3"])
     return (I & ~M)
