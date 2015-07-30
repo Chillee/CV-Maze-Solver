@@ -6,9 +6,6 @@ def threshold(img):
     #PAPER_MIN = np.array([0, 0, 100],np.uint8)
     #PAPER_MAX = np.array([255, 255, 255],np.uint8)
     #img = cv2.inRange(img, PAPER_MIN, PAPER_MAX)
-    cv2.imshow("hue", img)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
     return img
 
 def boundingBox(img):
@@ -25,14 +22,19 @@ def boundingBox(img):
 
     return img
 
-def findAvgColumn(img):
+def findColumnLengths(img, horizontal, position):
     h, w = img.shape
+    position = h/2
     inMaze = False
     img = img/255
     numColumns=0
     inWall = False
     columnPos = []
-    for idx, i in enumerate(img[h/2, 0:w]):
+    if horizontal:
+        iterRange = enumerate(img[position, 0:w])
+    else:
+        iterRange = enumerate()
+    for idx, i in iterRange:
         if i == 1 and not inMaze:
             continue
         if i == 0 and not inMaze:
@@ -51,25 +53,44 @@ def findAvgColumn(img):
     whiteColumnLength = [x[1]-x[0] for x in columnPos]
     blackColumnLength = [columnPos[idx+1][0] - columnPos[idx][1] for idx, x in enumerate(columnPos[:-1])]
     whiteColumnLength = sorted(whiteColumnLength)
-    return whiteColumnLength[len(whiteColumnLength)/2], blackColumnLength[len(blackColumnLength)/2]
+    blackColumnLength = sorted(blackColumnLength)
+    return whiteColumnLength, blackColumnLength
 
 
 def processimage(img, sizeMult=None, handdrawn = False):
     img = threshold(img)
+    h, w = img.shape
     #img = boundingBox(img)
     MIN_COLUMN_SIZE = 15.0
     if handdrawn:
         img = cv2.erode(img, (7, 7))
         img = cv2.medianBlur(img, 3)
         MIN_COLUMN_SIZE = 30.0
-
-    cv2.imshow("img", img)
-    cv2.destroyAllWindows()
+        
     #img = boundingBox(img)
 
     if not sizeMult:
-        whiteColSize, blackColSize = findAvgColumn(img)
+        whiteCols, blackCols = [], []
+        for i in [h/3, h/2, 2*h/3]:
+            x = findColumnLengths(img, True, i)
+            whiteCols.append(x[0])
+            blackCols.append(x[1])
+
+        whiteCols = [i for sublist in whiteCols for i in sublist]
+        blackCols = [i for sublist in blackCols for i in sublist]
+
+        if handdrawn:
+            blackCols= [i for i in blackCols if i > 2]
+            whiteCols = [i for i in whiteCols if i > 2]
+        whiteCols = sorted(whiteCols)
+        blackCols = sorted(blackCols)
+        print whiteCols, blackCols
+
+        whiteColSize = whiteCols[len(whiteCols)/2]
+        blackColSize = blackCols[len(blackCols)/2]
+
         print whiteColSize, blackColSize
+
         sizeMult = MIN_COLUMN_SIZE/whiteColSize
     print sizeMult
     img = cv2.resize(img, (0, 0), fx=sizeMult, fy=sizeMult)
