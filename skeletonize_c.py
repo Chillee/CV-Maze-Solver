@@ -1,8 +1,12 @@
 import numpy as np
 from scipy import weave
 
+no_openmp = False
+
 
 def thinning_iteration(im, iter, x0, y0, x1, y1):
+    global no_openmp
+
     I, M = im, np.zeros(im.shape, np.uint8)
     expr = """
     #define I_idx(i, j) I[(i) * NI[1] + (j)]
@@ -30,11 +34,16 @@ def thinning_iteration(im, iter, x0, y0, x1, y1):
         }
     }
     """
-    try:
-        weave.inline(expr, ["I", "iter", "M", "x0", "y0", "x1", "y1"],
-                     extra_compile_args=["-O3", "-fopenmp"],
-                     extra_link_args=["-fopenmp", "-lgomp"])
-    except weave.build_tools.CompileError:
+    if no_openmp:
         weave.inline(expr, ["I", "iter", "M", "x0", "y0", "x1", "y1"],
                      extra_compile_args=["-O3"])
+    else:
+        try:
+            weave.inline(expr, ["I", "iter", "M", "x0", "y0", "x1", "y1"],
+                         extra_compile_args=["-O3", "-fopenmp"],
+                         extra_link_args=["-fopenmp", "-lgomp"])
+        except weave.build_tools.CompileError:
+            no_openmp = True
+            weave.inline(expr, ["I", "iter", "M", "x0", "y0", "x1", "y1"],
+                         extra_compile_args=["-O3"])
     return (I & ~M)
