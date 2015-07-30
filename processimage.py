@@ -33,7 +33,7 @@ def findColumnLengths(img, horizontal, position):
     if horizontal:
         iterRange = enumerate(img[position, 0:w])
     else:
-        iterRange = enumerate()
+        iterRange = enumerate(img[0:h, position])
     for idx, i in iterRange:
         if i == 1 and not inMaze:
             continue
@@ -58,7 +58,10 @@ def findColumnLengths(img, horizontal, position):
 
 
 def processimage(img, sizeMult=None, handdrawn = False):
-    img = threshold(img)
+    if handdrawn:
+        img = threshold(img)
+    else:
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     h, w = img.shape
     #img = boundingBox(img)
     MIN_COLUMN_SIZE = 15.0
@@ -72,6 +75,11 @@ def processimage(img, sizeMult=None, handdrawn = False):
         whiteCols, blackCols = [], []
         for i in [h/3, h/2, 2*h/3]:
             x = findColumnLengths(img, True, i)
+            whiteCols.append(x[0])
+            blackCols.append(x[1])
+
+        for i in [w/3, w/2, 2*w/3]:
+            x = findColumnLengths(img, False, i)
             whiteCols.append(x[0])
             blackCols.append(x[1])
 

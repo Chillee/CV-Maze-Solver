@@ -11,16 +11,19 @@ import config
 
 parser = argparse.ArgumentParser(description='Solve a maze from an image')
 parser.add_argument('image', help='Image of maze to solve')
+parser.add_argument('--manual', '-m',
+                    dest='manual', action='store_true',
+                    help='Manually select start and end points\
+                     instead of automatically detecting them')
 parser.add_argument("--handdrawn", '-d',
                     dest='handdrawn', action='store_true',
                     help='Preprocess the image for a hand-drawn maze')
 parser.add_argument("--scale", '-s',
                     dest='scale', type=float, default=None,
                     help='Scale factor to scale the image by before solving')
-parser.add_argument("--rows", '-r', dest="screenRows",
-                    help="Pixel width of resolution", default=1024)
-parser.add_argument("--cols", '-c', dest="screenCols",
-                    help="Pixel height of resolution", default=768)
+parser.add_argument("--rows", '-r', dest="screenRows", help="Pixel width of resolution", default=1024)
+parser.add_argument("--cols", '-c', dest="screenCols", help="Pixel height of resolution", default=768)
+
 parser.add_argument("--output", '-o',
                     dest='output', default="maze_solved.png",
                     help='File to write the final solved maze image to')
@@ -45,21 +48,19 @@ start_time = time.time()
 img = origImg.copy()
 
 img = processimage.processimage(origImg, args.scale, args.handdrawn)
-ret = mazereader.read_maze(img)
+ret = mazereader.read_maze(img, args.manual)
 start = end = None
 num_clicks = 0
 
 if ret is not None:
-    img2, graph = ret
+    img2, graph, start, end = ret
     if not config.nogui:
         cv2.imshow("image", img2)
     end_time = time.time()
     print("Time: {}".format(end_time - start_time))
-    dispScale = min(float(args.screenRows) / img2.shape[1],
-                    float(args.screenCols) / img2.shape[0])
-    pathImg = cv2.resize(cv2.resize(origImg.copy(),
-                         (img2.shape[1], img2.shape[0])), (0, 0),
-                         fx=dispScale, fy=dispScale)
+    dispScale = min(float(args.screenRows)/img2.shape[1], float(args.screenCols)/img2.shape[0])
+    pathImg = cv2.resize(cv2.resize(origImg.copy(), (img2.shape[1], img2.shape[0])),(0,0), fx = dispScale, fy = dispScale)
+
 
     while True:
         if start is None or end is None:
@@ -68,8 +69,8 @@ if ret is not None:
             # img2_copy = cv2.resize(img2.copy(), (0, 0), fx=.75, fy=.75)
 
             def mouse_callback(event, x, y, flags, param):
-                xx = x / dispScale
-                yy = y / dispScale
+                xx = x/dispScale
+                yy = y/dispScale
                 global start, end, num_clicks
                 if event == cv2.EVENT_LBUTTONUP:
                     # cv2.circle(img2_copy, (x, y), 5, (255, 0, 255), -1,
@@ -84,15 +85,13 @@ if ret is not None:
                                              None)
                     num_clicks += 1
             # let the user pick the start and end points
-
+            
             if not config.nogui:
                 cv2.imshow("image", img2)
                 cv2.imshow("image_solved", pathImg)
                 cv2.setMouseCallback("image_solved", mouse_callback,
                                      (num_clicks, start, end))
-            pathImg = cv2.resize(cv2.resize(origImg.copy(),
-                                 (img2.shape[1], img2.shape[0])), (0, 0),
-                                 fx=dispScale, fy=dispScale)
+            pathImg = cv2.resize(cv2.resize(origImg.copy(), (img2.shape[1], img2.shape[0])),(0,0), fx = dispScale, fy = dispScale)
 
             while num_clicks != 2:
                 if cv2.waitKey(10) == ord('q'):
@@ -115,19 +114,12 @@ if ret is not None:
                 pixels = graph.connections[(a, b)][1]
                 for pos0, pos1 in zip(pixels, pixels[1:]):
                     # pathImg[y, x] = np.array([255, 0, 0], dtype=np.uint8)
-                    cv2.line(pathImg, (int(pos0[0] * dispScale),
-                             int(pos0[1] * dispScale)),
-                             (int(pos1[0] * dispScale),
-                             int(pos1[1] * dispScale)),
-                             (255, 0, 0), 1, cv2.LINE_AA)
+                    cv2.line(pathImg, (int(pos0[0]*dispScale), int(pos0[1]*dispScale)), (int(pos1[0]*dispScale), int(pos1[1]*dispScale)), (255, 0, 0), 1,
+                             cv2.LINE_AA)
             else:
                 last = graph.nodes[a]
                 node = graph.nodes[b]
-                cv2.line(pathImg, (int(last.pos[0] * dispScale),
-                         int(last.pos[1] * dispScale)),
-                         (int(node.pos[0] * dispScale),
-                         int(node.pos[1] * dispScale)),
-                         (255, 0, 0), 2, cv2.LINE_AA)
+                cv2.line(pathImg, (int(last.pos[0]*dispScale), int(last.pos[1]*dispScale)), (int(node.pos[0]*dispScale), int(node.pos[1]*dispScale)), (255, 0, 0), 2, cv2.LINE_AA)
         print("Done")
 
         if not config.nogui:

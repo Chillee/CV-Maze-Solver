@@ -39,7 +39,7 @@ def create_graph_nodes(skeleton, eroded, img):
 
 def read_maze(img):
     img2 = img.copy()
-
+    cv2.imshow("thresh", img)
     b, g, r = cv2.split(img)
     h, s, v = cv2.split(cv2.cvtColor(img, cv2.COLOR_BGR2HSV))
 
@@ -55,6 +55,8 @@ def read_maze(img):
         cv2.threshold(v, 254, 255, cv2.THRESH_BINARY)[1],
         cv2.bitwise_not(cv2.bitwise_or(thresh_r, thresh_g)))
     thresh_v_eroded = cv2.erode(thresh_v, np.ones((3, 3), np.uint8))
+
+    
     thresh_v_skeleton = skeletonize.skeletonize_zhang_shuen(thresh_v)
     if not config.nogui:
         cv2.imshow("skeleton",
