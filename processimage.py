@@ -1,4 +1,5 @@
 import cv2
+import numpy as np
 
 
 def threshold_value(img):
@@ -14,16 +15,22 @@ def threshold_value(img):
         cv2.threshold(g, 200, 255, cv2.THRESH_BINARY)[1], thresh_s)
 
     return cv2.bitwise_and(
-        cv2.threshold(v, 254, 255, cv2.THRESH_BINARY)[1],
+        cv2.threshold(v, 200, 255, cv2.THRESH_BINARY)[1],
         cv2.bitwise_not(cv2.bitwise_or(thresh_r, thresh_g)))
 
 
 def threshold(img):
-    img = cv2.adaptiveThreshold(cv2.cvtColor(img, cv2.COLOR_BGR2GRAY), 255,
+    adapt_thresh = cv2.adaptiveThreshold(cv2.cvtColor(img, cv2.COLOR_BGR2GRAY), 255,
                                 cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY,
                                 11, 4)
-    # PAPER_MIN = np.array([0, 0, 100],np.uint8)
-    # PAPER_MAX = np.array([255, 255, 255],np.uint8)
+    PAPER_MIN = np.array([0, 0, 110],np.uint8)
+    PAPER_MAX = np.array([255, 255, 255],np.uint8)
+    range_thresh = cv2.inRange(img, PAPER_MIN, PAPER_MAX)
+
+    img = cv2.bitwise_and(range_thresh, adapt_thresh)
+    cv2.imshow("range", range_thresh)
+    cv2.imshow("adapt_thresh", adapt_thresh)
+
     # img = cv2.inRange(img, PAPER_MIN, PAPER_MAX)
     return img
 
@@ -70,6 +77,8 @@ def find_column_length(img, horizontal, position):
         elif i == 1 and in_wall:
             in_wall = False
             column_pos.append([idx])
+    if(len(column_pos) == 0):
+        return [], []
     if(len(column_pos[-1]) == 1):
         column_pos.pop()
     whiteColumnLength = [x[1]-x[0] for x in column_pos]
@@ -79,21 +88,23 @@ def find_column_length(img, horizontal, position):
     return whiteColumnLength, blackColumnLength
 
 
-def processimage(img, sizeMult=None, handdrawn = False):
+def processimage(img, size_mult=None, handdrawn = False):
     if handdrawn:
         img = threshold(img)    
     else:
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        img = threshold_value(img)
     h, w = img.shape
     # img = bounding_box(img)
     min_column_size = 15.0
     if handdrawn:
-        img = cv2.erode(img, (7, 7))
+        #kernel = cv2.getStructuringElement(cv2.MORPH_CROSS,(3,3))
+        #img = cv2.erode(img, kernel)
         img = cv2.medianBlur(img, 3)
         min_column_size = 30.0
+        #cv2.imshow("heh", img)
     # img = bounding_box(img)
 
-    if not sizeMult:
+    if not size_mult:
         white_cols, black_cols = [], []
         for i in [h / 3, h / 2, 2 * h / 3]:
             x = find_column_length(img, True, i)

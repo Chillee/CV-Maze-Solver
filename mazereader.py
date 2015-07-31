@@ -28,7 +28,7 @@ def find_start_end(thresh_r, thresh_g):
 
 
 def create_graph_nodes(skeleton, eroded, img):
-    corners = cv2.goodFeaturesToTrack(skeleton, 0, 0.025, 10)
+    corners = cv2.goodFeaturesToTrack(skeleton, 0, 0.025, 5)
     g = graph.Graph()
     for corner in corners:
         if eroded[corner[0][1], corner[0][0]] != 0:

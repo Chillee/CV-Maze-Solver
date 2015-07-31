@@ -44,6 +44,8 @@ start_time = time.time()
 img = origImg.copy()
 
 img = processimage.processimage(origImg, config.args.scale, config.args.handdrawn)
+
+cv2.imshow("processed image", img)
 ret = mazereader.read_maze(img)
 start = end = None
 num_clicks = 0
@@ -115,12 +117,12 @@ if ret is not None:
             else:
                 last = graph.nodes[a]
                 node = graph.nodes[b]
-                cv2.line(pathImg, (int(last.pos[0]*dispScale), int(last.pos[1]*dispScale)), (int(node.pos[0]*dispScale), int(node.pos[1]*dispScale)), (255, 0, 0), 2, cv2.LINE_AA)
+                cv2.line(pathImg, (int(last.pos[0]*dispScale), int(last.pos[1]*dispScale)), (int(node.pos[0]*dispScale), int(node.pos[1]*dispScale)), (255, 0, 0), 1, cv2.LINE_AA)
         print("Done")
 
-        if not config.args.nogui:
-            cv2.imshow("image_solved",
-                       cv2.resize(img_copy, (0, 0), fx=0.75, fy=0.75))
+       # if not config.args.nogui:
+            #cv2.imshow("image_solved",
+                       #cv2.resize(img_copy, (0, 0), fx=0.75, fy=0.75))
         cv2.imwrite(config.args.output, pathImg)
         start = None
         end = None
