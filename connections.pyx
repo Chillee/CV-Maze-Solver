@@ -1,6 +1,7 @@
 from cpython cimport array as c_array
 from cython.view cimport array as cvarray
 from array import array
+from Queue import PriorityQueue
 import copy
 import numpy as np
 cimport numpy as np
@@ -25,10 +26,27 @@ def get_connections(g,
     cdef np.ndarray[np.uint16_t, ndim=2] node_map = np.zeros([height, width], dtype=np.uint16)
 
     for idx, node in enumerate(g.nodes):
-        x = int(node.pos[0] / 2)
-        y = int(node.pos[1] / 2)
-        visited[y-1:y+2, x-1:x+2, 1] = 255
-        node_map[y-1:y+2, x-1:x+2] = idx
+        x, y = node.pos
+        x /= 2
+        y /= 2
+        #find the closest section of the skeleton
+        stack = PriorityQueue()
+        stack.put((0, x, y))
+        num_points = 0
+        while True:
+            dist, x, y = stack.get()
+            if skeleton[y, x] != 0:
+                visited[y, x, 1] = 255
+                node_map[y, x] = idx
+                num_points += 1
+                if num_points == 4:
+                    break
+            for dx in range(-1, 2):
+                for dy in range(-1, 2):
+                    xx = x + dx
+                    yy = y + dy
+                    if xx >= 0 and xx < width and yy >= 0 and yy < height:
+                        stack.put((dist + 1, xx, yy))
 
     pixel_stack_pos = [array('i', [int(g.nodes[0].pos[0] / 2), int(g.nodes[0].pos[1] / 2)])]
     pixel_stack_node = [0]

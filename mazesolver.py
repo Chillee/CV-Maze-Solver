@@ -33,10 +33,10 @@ parser.add_argument("--pixellines", '-p',
                     help='Draw the lines between nodes at pixel\
                     resolution from the skeleton (can help in\
                     situations where the lines go through walls)')
-parser.add_argument("--notiles", '-t',
-                    dest='tiles', action='store_false',
-                    help='Do not use tiled skeletonization\
-                    (faster on uniform mazes)')
+parser.add_argument("--tiles", '-t',
+                    dest='tiles', action='store_true',
+                    help='Use tiled skeletonization\
+                    (sometimes faster on images with lots of white space')
 
 args = parser.parse_args()
 

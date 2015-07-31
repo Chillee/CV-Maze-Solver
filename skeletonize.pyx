@@ -23,14 +23,15 @@ def skeletonize_zhang_shuen(np.ndarray[np.uint8_t, ndim=2] src):
                 tiles.append((xx, yy))
         print("Using {} tiles".format(len(tiles)))
         done = False
+        i = 0
         while len(tiles) > 0:
+            i += 1
             for xx, yy in tiles:
                 x0 = xx * TILE_SIZE + 1
                 x1 = min((xx + 1) * TILE_SIZE + 1, width - 1)
                 y0 = yy * TILE_SIZE + 1
                 y1 = min((yy + 1) * TILE_SIZE + 1, height - 1)
-                dst = thinning_iteration(dst, 0, x0, y0, x1, y1)
-                dst = thinning_iteration(dst, 1, x0, y0, x1, y1)
+                dst[x0:x1, y0:y1] = thinning_iteration(prev, i % 2, x0, y0, x1, y1)[x0:y0, x1:y1]
                 diff = np.absolute(dst[x0:x1, y0:y1] - prev[x0:x1, y0:y1])
                 if np.sum(diff) == 0:
                     if np.all(dst[x0:x1, y0:y1]):
