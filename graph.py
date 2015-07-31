@@ -2,6 +2,7 @@ import copy
 import numpy as np
 import scipy.spatial
 from Queue import PriorityQueue
+import config
 
 
 class Node(object):
@@ -20,6 +21,7 @@ class Graph(object):
     def __init__(self):
         self.nodes = []
         self.connections = {}
+        self.tree = None
 
     def add_node(self, node):
         self.nodes.append(node)
@@ -47,21 +49,29 @@ class Graph(object):
                     y = int(alpha * self.nodes[a].pos[1] +
                             inv_alpha * self.nodes[b].pos[1])
                     new_node = self.add_node(Node((x, y), self.nodes[a].group))
-                    self.link_nodes(new_node, last_node,
-                                    self.nodes[last_node].dist(
-                                        self.nodes[new_node]),
-                                    pixels[(len(pixels) * i) / num_nodes:
-                                           (len(pixels) * (i + 1)) / num_nodes]
-                                    )
+                    dist = self.nodes[last_node].dist(self.nodes[new_node])
+                    if config.args.pixellines:
+                        self.link_nodes(new_node, last_node, dist,
+                                        pixels[(len(pixels) * i) / num_nodes:
+                                               (len(pixels) * (i + 1)) /
+                                               num_nodes]
+                                        )
+                    else:
+                        self.link_nodes(new_node, last_node, dist)
                     last_node = new_node
-                self.link_nodes(last_node, b,
-                                self.nodes[last_node].dist(self.nodes[b]),
-                                pixels[(len(pixels) * (num_nodes - 1)) /
-                                       num_nodes:])
+                dist = self.nodes[last_node].dist(self.nodes[b])
+                if config.args.pixellines:
+                    self.link_nodes(last_node, b, dist,
+                                    pixels[(len(pixels) * (num_nodes - 1)) /
+                                           num_nodes:])
+                else:
+                    self.link_nodes(last_node, b, dist)
 
     def build_kd_tree(self):
-        return scipy.spatial.KDTree(
-            np.array([node.pos for node in self.nodes]))
+        if self.tree is None:
+            self.tree = scipy.spatial.KDTree(
+                np.array([node.pos for node in self.nodes]))
+        return self.tree
 
     def dijkstra(self, start, end):
         dists = [float("inf") for i in self.nodes]

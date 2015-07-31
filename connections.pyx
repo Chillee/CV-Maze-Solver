@@ -6,6 +6,7 @@ import numpy as np
 cimport numpy as np
 cimport cython
 import cv2
+import config
 
 @cython.boundscheck(False)
 @cython.infer_types(True)
@@ -41,7 +42,9 @@ def get_connections(g,
     while len(pixel_stack_pos) > 0:
         pos = pixel_stack_pos.pop()
         cur_node = pixel_stack_node.pop()
-        path = pixel_stack_path.pop()
+        path = None
+        if config.args.pixellines:
+            path = pixel_stack_path.pop()
 
         g.nodes[cur_node].group = group
         if cur_node in unprocessed_nodes:
@@ -57,7 +60,8 @@ def get_connections(g,
         #     cv2.imshow("visited", visited)
         #     cv2.waitKey(1)
 
-        path.append((pos[0] * 2, pos[1] * 2))
+        if config.args.pixellines:
+            path.append((pos[0] * 2, pos[1] * 2))
         if visited[y, x, 1] != 0:
             node = node_map[y, x]
             if node != cur_node:
@@ -66,7 +70,8 @@ def get_connections(g,
                     yy = g.nodes[node].pos[1] - g.nodes[cur_node].pos[1]
                     g.link_nodes(node, cur_node, np.sqrt(xx * xx + yy * yy), path)
                 cur_node = node
-                path = path[:-1]
+                if config.args.pixellines:
+                    path = path[:-1]
 
         num_children = 0
         for dx in range(-1, 2):
@@ -78,14 +83,16 @@ def get_connections(g,
                         num_children += 1
                         pixel_stack_pos.append(array('i', [xx, yy]))
                         pixel_stack_node.append(cur_node)
-                        if num_children == 0:
-                            pixel_stack_path.append(path)
-                        else:
-                            pixel_stack_path.append(copy.copy(path))
+                        if config.args.pixellines:
+                            if num_children == 0:
+                                pixel_stack_path.append(path)
+                            else:
+                                pixel_stack_path.append(copy.copy(path))
 
         if len(pixel_stack_pos) == 0 and len(unprocessed_nodes) > 0:
             group += 1
             n = unprocessed_nodes.pop()
             pixel_stack_pos.append(array('i', [int(g.nodes[n].pos[0] / 2), int(g.nodes[n].pos[1] / 2)]))
             pixel_stack_node.append(n)
-            pixel_stack_path.append([])
+            if config.args.pixellines:
+                pixel_stack_path.append([])

@@ -79,7 +79,7 @@ def find_column_length(img, horizontal, position):
     return whiteColumnLength, blackColumnLength
 
 
-def processimage(img, sizeMult=None, handdrawn = False):
+def processimage(img, size_mult=None, handdrawn = False):
     if handdrawn:
         img = threshold(img)    
     else:
@@ -93,7 +93,7 @@ def processimage(img, sizeMult=None, handdrawn = False):
         min_column_size = 30.0
     # img = bounding_box(img)
 
-    if not sizeMult:
+    if not size_mult:
         white_cols, black_cols = [], []
         for i in [h / 3, h / 2, 2 * h / 3]:
             x = find_column_length(img, True, i)
