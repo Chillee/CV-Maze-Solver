@@ -5,6 +5,7 @@ import graph
 import skeletonize
 import connections
 import config
+import processimage
 
 
 def get_largest_contour_centroid(img):
@@ -39,21 +40,8 @@ def create_graph_nodes(skeleton, eroded, img):
 
 def read_maze(img):
     img2 = img.copy()
-    cv2.imshow("thresh", img)
-    b, g, r = cv2.split(img)
-    h, s, v = cv2.split(cv2.cvtColor(img, cv2.COLOR_BGR2HSV))
 
-    # use thresh_s to make sure that low-staturation areas are not included in
-    # the thresholds for red and green
-    thresh_s = cv2.threshold(s, 100, 255, cv2.THRESH_BINARY)[1]
-    thresh_r = cv2.bitwise_and(
-        cv2.threshold(r, 200, 255, cv2.THRESH_BINARY)[1], thresh_s)
-    thresh_g = cv2.bitwise_and(
-        cv2.threshold(g, 200, 255, cv2.THRESH_BINARY)[1], thresh_s)
-
-    thresh_v = cv2.bitwise_and(
-        cv2.threshold(v, 254, 255, cv2.THRESH_BINARY)[1],
-        cv2.bitwise_not(cv2.bitwise_or(thresh_r, thresh_g)))
+    thresh_v = processimage.threshold_value(img)
     thresh_v_eroded = cv2.erode(thresh_v, np.ones((3, 3), np.uint8))
 
     
