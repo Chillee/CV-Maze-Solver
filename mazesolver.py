@@ -17,8 +17,10 @@ parser.add_argument("--handdrawn", '-d',
 parser.add_argument("--scale", '-s',
                     dest='scale', type=float, default=None,
                     help='Scale factor to scale the image by before solving')
-parser.add_argument("--rows", '-r', dest="screenRows", help="Pixel width of resolution", default=1024)
-parser.add_argument("--cols", '-c', dest="screenCols", help="Pixel height of resolution", default=768)
+parser.add_argument("--rows", '-r', dest="screenRows",
+                    help="Pixel width of resolution", default=1024)
+parser.add_argument("--cols", '-c', dest="screenCols",
+                    help="Pixel height of resolution", default=768)
 
 parser.add_argument("--output", '-o',
                     dest='output', default="maze_solved.png",
@@ -31,6 +33,10 @@ parser.add_argument("--pixellines", '-p',
                     help='Draw the lines between nodes at pixel\
                     resolution from the skeleton (can help in\
                     situations where the lines go through walls)')
+parser.add_argument("--notiles", '-t',
+                    dest='tiles', action='store_false',
+                    help='Do not use tiled skeletonization\
+                    (faster on uniform mazes)')
 
 args = parser.parse_args()
 
@@ -43,9 +49,14 @@ if origImg is None:
 start_time = time.time()
 img = origImg.copy()
 
+<<<<<<< HEAD
 img = processimage.processimage(origImg, config.args.scale, config.args.handdrawn)
 
 cv2.imshow("processed image", img)
+=======
+img = processimage.processimage(origImg, config.args.scale,
+                                config.args.handdrawn)
+>>>>>>> c5d15eee631124fa678d2fcff0c16787208d72fb
 ret = mazereader.read_maze(img)
 start = end = None
 num_clicks = 0
@@ -58,7 +69,6 @@ if ret is not None:
     print("Time: {}".format(end_time - start_time))
     dispScale = min(float(config.args.screenRows)/img2.shape[1], float(config.args.screenCols)/img2.shape[0])
     pathImg = cv2.resize(cv2.resize(origImg.copy(), (img2.shape[1], img2.shape[0])),(0,0), fx = dispScale, fy = dispScale)
-
 
     while True:
         if start is None or end is None:
@@ -83,7 +93,7 @@ if ret is not None:
                                              None)
                     num_clicks += 1
             # let the user pick the start and end points
-            
+
             if not config.args.nogui:
                 cv2.imshow("image", img2)
                 cv2.imshow("image_solved", pathImg)
