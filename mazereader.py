@@ -46,7 +46,7 @@ def read_maze(img):
 
     
     thresh_v_skeleton = skeletonize.skeletonize_zhang_shuen(thresh_v)
-    if not config.nogui:
+    if not config.args.nogui:
         cv2.imshow("skeleton",
                    cv2.resize(thresh_v_skeleton, (0, 0), fx=0.5, fy=0.5))
 

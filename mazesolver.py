@@ -11,10 +11,6 @@ import config
 
 parser = argparse.ArgumentParser(description='Solve a maze from an image')
 parser.add_argument('image', help='Image of maze to solve')
-parser.add_argument('--manual', '-m',
-                    dest='manual', action='store_true',
-                    help='Manually select start and end points\
-                     instead of automatically detecting them')
 parser.add_argument("--handdrawn", '-d',
                     dest='handdrawn', action='store_true',
                     help='Preprocess the image for a hand-drawn maze')
@@ -38,27 +34,27 @@ parser.add_argument("--pixellines", '-p',
 
 args = parser.parse_args()
 
-config.nogui = args.nogui
+config.args = args
 
-origImg = cv2.imread(args.image)
+origImg = cv2.imread(config.args.image)
 if origImg is None:
     print("Unable to load image file")
     sys.exit(-1)
 start_time = time.time()
 img = origImg.copy()
 
-img = processimage.processimage(origImg, args.scale, args.handdrawn)
-ret = mazereader.read_maze(img, args.manual)
+img = processimage.processimage(origImg, config.args.scale, config.args.handdrawn)
+ret = mazereader.read_maze(img)
 start = end = None
 num_clicks = 0
 
 if ret is not None:
-    img2, graph, start, end = ret
-    if not config.nogui:
+    img2, graph = ret
+    if not config.args.nogui:
         cv2.imshow("image", img2)
     end_time = time.time()
     print("Time: {}".format(end_time - start_time))
-    dispScale = min(float(args.screenRows)/img2.shape[1], float(args.screenCols)/img2.shape[0])
+    dispScale = min(float(config.args.screenRows)/img2.shape[1], float(config.args.screenCols)/img2.shape[0])
     pathImg = cv2.resize(cv2.resize(origImg.copy(), (img2.shape[1], img2.shape[0])),(0,0), fx = dispScale, fy = dispScale)
 
 
@@ -86,7 +82,7 @@ if ret is not None:
                     num_clicks += 1
             # let the user pick the start and end points
             
-            if not config.nogui:
+            if not config.args.nogui:
                 cv2.imshow("image", img2)
                 cv2.imshow("image_solved", pathImg)
                 cv2.setMouseCallback("image_solved", mouse_callback,
@@ -110,7 +106,7 @@ if ret is not None:
         img_copy = img.copy()
         print("Drawing lines")
         for a, b in zip(path, path[1:]):
-            if args.pixellines:
+            if config.args.pixellines:
                 pixels = graph.connections[(a, b)][1]
                 for pos0, pos1 in zip(pixels, pixels[1:]):
                     # pathImg[y, x] = np.array([255, 0, 0], dtype=np.uint8)
@@ -122,10 +118,10 @@ if ret is not None:
                 cv2.line(pathImg, (int(last.pos[0]*dispScale), int(last.pos[1]*dispScale)), (int(node.pos[0]*dispScale), int(node.pos[1]*dispScale)), (255, 0, 0), 2, cv2.LINE_AA)
         print("Done")
 
-        if not config.nogui:
+        if not config.args.nogui:
             cv2.imshow("image_solved",
                        cv2.resize(img_copy, (0, 0), fx=0.75, fy=0.75))
-        cv2.imwrite(args.output, pathImg)
+        cv2.imwrite(config.args.output, pathImg)
         start = None
         end = None
         if __name__ != "__main__":
