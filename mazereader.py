@@ -28,7 +28,7 @@ def find_start_end(thresh_r, thresh_g):
 
 
 def create_graph_nodes(skeleton, eroded, img):
-    corners = cv2.goodFeaturesToTrack(skeleton, 0, 0.025, 5)
+    corners = cv2.goodFeaturesToTrack(skeleton, 0, 0.05, 3)
     g = graph.Graph()
     for corner in corners:
         if eroded[corner[0][1], corner[0][0]] != 0:
@@ -44,7 +44,6 @@ def read_maze(img):
     thresh_v = processimage.threshold_value(img)
     thresh_v_eroded = cv2.erode(thresh_v, np.ones((3, 3), np.uint8))
 
-    
     thresh_v_skeleton = skeletonize.skeletonize_zhang_shuen(thresh_v)
     if not config.args.nogui:
         cv2.imshow("skeleton",

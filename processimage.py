@@ -90,12 +90,13 @@ def find_column_length(img, horizontal, position):
 
 def processimage(img, size_mult=None, handdrawn = False):
     if handdrawn:
-        img = threshold(img)    
+        img = threshold(img)
     else:
         img = threshold_value(img)
     h, w = img.shape
     # img = bounding_box(img)
-    min_column_size = 15.0
+    #min_column_size = 15.0
+    min_column_size = 8.0
     if handdrawn:
         #kernel = cv2.getStructuringElement(cv2.MORPH_CROSS,(3,3))
         #img = cv2.erode(img, kernel)
