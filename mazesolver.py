@@ -62,6 +62,7 @@ if ret is not None:
     end_time = time.time()
     print("Time: {}".format(end_time - start_time))
     dispScale = min(float(config.args.screenRows)/img2.shape[1], float(config.args.screenCols)/img2.shape[0])
+    dispScale = min(1, dispScale)
     pathImg = cv2.resize(cv2.resize(origImg.copy(), (img2.shape[1], img2.shape[0])),(0,0), fx = dispScale, fy = dispScale)
 
     while True:
