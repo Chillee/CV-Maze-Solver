@@ -49,8 +49,9 @@ if origImg is None:
 start_time = time.time()
 img = origImg.copy()
 
-img = processimage.processimage(origImg, config.args.scale,
-                                config.args.handdrawn)
+img, scale = processimage.processimage(origImg, config.args.scale,
+                                       config.args.handdrawn)
+cv2.imwrite("preprocessed.png", img)
 ret = mazereader.read_maze(img)
 start = end = None
 num_clicks = 0

@@ -1,0 +1,19 @@
+<head>
+    <title>webui</title>
+</head>
+
+<body>
+    {{> upload}}
+    {{> options}}
+</body>
+
+<template name="upload">
+    <!--<div id="dropzone"></div>-->
+    <form action="/file-upload" class="dropzone" id="dropzone"></form>
+    <div id="dropzone"></div>
+</template>
+
+<template name="options">
+    <input type="checkbox" id="handdrawn"/>Handdrawn<br/>
+    <input type="submit" id="solve" value="Solve Maze"/>
+</template>

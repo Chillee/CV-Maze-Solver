@@ -1,0 +1,28 @@
+body {
+    font-family: sans-serif;
+}
+
+.button {
+    display: inline;
+    background-color: #dadafa;
+    color: #404040;
+    border-color: #b779cb;
+    border-radius: 5px;
+    border-width: 2px;
+    padding: .5em;
+}
+
+.dz-progress {
+    visibility: hidden;
+}
+
+#dropzone {
+    border-color: #21a8d6;
+    border-width: 3px;
+    border-radius: 20px;
+    box-shadow: 0px 0px 20px 2px #c0d8e4 inset;
+}
+
+.dz-message {
+    font-size: 20pt;
+}

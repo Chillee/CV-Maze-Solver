@@ -1,3 +1,4 @@
+#TODO: denoise
 import cv2
 import numpy as np
 
@@ -100,14 +101,14 @@ def processimage(img, size_mult=None, handdrawn = False):
     h, w = img.shape
     # img = bounding_box(img)
     #min_column_size = 15.0
-    min_column_size = 8.0
+    min_column_size = 10.0
     if handdrawn:
         kernel = cv2.getStructuringElement(cv2.MORPH_CROSS,(3,3))
         img = cv2.medianBlur(img, 3)
         kernel = np.ones((5,5),np.uint8)
         img = cv2.erode(img, kernel)
 
-        min_column_size = 30.0
+        min_column_size = 16.0
         #cv2.imshow("heh", img)
     # img = bounding_box(img)
 
@@ -144,7 +145,7 @@ def processimage(img, size_mult=None, handdrawn = False):
 
     img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
 
-    return img
+    return img, size_mult
 
 if __name__ == "__main__":
     img = cv2.imread("maze3.png")

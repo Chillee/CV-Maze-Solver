@@ -28,7 +28,7 @@ def find_start_end(thresh_r, thresh_g):
 
 
 def create_graph_nodes(skeleton, eroded, img):
-    corners = cv2.goodFeaturesToTrack(skeleton, 0, 0.015, 3)
+    corners = cv2.goodFeaturesToTrack(skeleton, 0, 0.03, 3)
     g = graph.Graph()
     for corner in corners:
         if eroded[corner[0][1], corner[0][0]] != 0:
@@ -41,13 +41,14 @@ def create_graph_nodes(skeleton, eroded, img):
 def read_maze(img):
     img2 = img.copy()
 
-    thresh_v = processimage.threshold_value(img)
+    thresh_v = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     thresh_v_eroded = cv2.erode(thresh_v, np.ones((3, 3), np.uint8))
 
     thresh_v_skeleton = skeletonize.skeletonize_zhang_shuen(thresh_v)
     if not config.args.nogui:
         cv2.imshow("skeleton",
                    cv2.resize(thresh_v_skeleton, (0, 0), fx=0.5, fy=0.5))
+    cv2.imwrite("skeleton.png", thresh_v_skeleton)
 
     g = create_graph_nodes(thresh_v_skeleton, thresh_v_eroded, img2)
     connections.get_connections(g, thresh_v_skeleton, thresh_v_eroded)
@@ -62,8 +63,10 @@ def read_maze(img):
                 random.randint(0, 255))
         cv2.circle(img2, (node.pos[0], node.pos[1]), 3,
                    group_colors[node.group], -1, cv2.LINE_AA)
+    cv2.imwrite("nodes.png", img2)
     for a, b in g.connections:
         cv2.line(img2, g.nodes[a].pos, g.nodes[b].pos,
                  (0, 255, 0), 1, cv2.LINE_AA)
+    cv2.imwrite("connections.png", img2)
 
     return img2, g
