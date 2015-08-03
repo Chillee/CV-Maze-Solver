@@ -16,7 +16,7 @@ def threshold_value(img):
         cv2.threshold(g, 200, 255, cv2.THRESH_BINARY)[1], thresh_s)
 
     return cv2.bitwise_and(
-        cv2.threshold(v, 140, 255, cv2.THRESH_BINARY)[1],
+        cv2.threshold(v, 150, 255, cv2.THRESH_BINARY)[1],
         cv2.bitwise_not(cv2.bitwise_or(thresh_r, thresh_g)))
     #PAPER_MIN = np.array([0, 0, 110])
     #img = cv2.inRange(cv2.cvtColor(img, cv2.COLOR_BGR2GRAY), 190, 255)
@@ -108,7 +108,7 @@ def processimage(img, size_mult=None, handdrawn = False):
         kernel = np.ones((5,5),np.uint8)
         img = cv2.erode(img, kernel)
 
-        min_column_size = 16.0
+        min_column_size = 15.0
         #cv2.imshow("heh", img)
     # img = bounding_box(img)
 
