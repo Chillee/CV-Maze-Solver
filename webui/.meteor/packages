@@ -12,3 +12,6 @@ cfs:standard-packages
 cfs:filesystem
 cfs:access-point
 risul:dropzone
+semantic:ui
+flemay:less-autoprefixer
+semantic:ui-css

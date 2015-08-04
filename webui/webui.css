@@ -1,15 +1,7 @@
 body {
     font-family: sans-serif;
-}
-
-.button {
-    display: inline;
-    background-color: #dadafa;
-    color: #404040;
-    border-color: #b779cb;
-    border-radius: 5px;
-    border-width: 2px;
-    padding: .5em;
+    padding-left: 1em;
+    padding-right: 1em;
 }
 
 .dz-progress {

@@ -5,6 +5,7 @@
 <body>
     {{> upload}}
     {{> options}}
+    {{> solverUi}}
 </body>
 
 <template name="upload">
@@ -14,6 +15,22 @@
 </template>
 
 <template name="options">
-    <input type="checkbox" id="handdrawn"/>Handdrawn<br/>
-    <input type="submit" id="solve" value="Solve Maze"/>
+    <div class="ui checkbox">
+        <input id="handdrawn" type="checkbox"/>
+        <label>Handdrawn</label>
+    </div>
+    <br/>
+    <!--<div class="ui checkbox">
+        <input id="use-scale" type="checkbox"/>
+        <label>Scale</label>
+        <input id="scale" type="text"/>
+    </div>-->
+    <button class="ui primary button" id="process">Process Maze</button>
+    {{#if processingMaze}}
+        <div class="ui active inline loader"></div>
+    {{/if}}
+</template>
+
+<template name="solverUi">
+    <canvas width="0" height="0"></canvas>
 </template>
