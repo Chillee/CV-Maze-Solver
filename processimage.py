@@ -103,13 +103,15 @@ def processimage(img, size_mult=None, handdrawn = False):
     #min_column_size = 15.0
     min_column_size = 10.0
     if handdrawn:
-        kernel = cv2.getStructuringElement(cv2.MORPH_CROSS,(3,3))
+        #kernel = cv2.getStructuringElement(cv2.MORPH_CROSS,(3,3))
+        
+        #img = cv2.fastNlMeansDenoising(img, 7, 21, 7)
         img = cv2.medianBlur(img, 3)
         kernel = np.ones((5,5),np.uint8)
         img = cv2.erode(img, kernel)
 
         min_column_size = 15.0
-        #cv2.imshow("heh", img)
+        
     # img = bounding_box(img)
 
     if not size_mult:
@@ -140,6 +142,7 @@ def processimage(img, size_mult=None, handdrawn = False):
         print(white_col_size, black_col_size)
 
         size_mult = min_column_size / white_col_size
+        size_mult = max(size_mult, 3.0 / white_col_size)
     print(size_mult)
     img = cv2.resize(img, (0, 0), fx=size_mult, fy=size_mult)
 
