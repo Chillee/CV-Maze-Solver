@@ -40,8 +40,8 @@ def skeletonize_zhang_shuen(np.ndarray[np.uint8_t, ndim=2] src):
             prev = dst.copy()
     else:
         while True:
-            dst = thinning_iteration(dst, 0, 1, 1, width - 2, height - 2)
-            dst = thinning_iteration(dst, 1, 1, 1, width - 2, height - 2)
+            dst = thinning_iteration(dst, 0, 1, 1, width - 1, height - 1)
+            dst = thinning_iteration(dst, 1, 1, 1, width - 1, height - 1)
             diff = np.absolute(dst - prev)
             if np.sum(diff) == 0:
                 break

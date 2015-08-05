@@ -62,8 +62,11 @@ if ret is not None:
         cv2.imshow("image", img2)
     end_time = time.time()
     print("Time: {}".format(end_time - start_time))
-    dispScale = min(float(config.args.screenRows)/img2.shape[1], float(config.args.screenCols)/img2.shape[0])
-    dispScale = min(1, dispScale)
+    w, r, h = img2.shape
+    r = max(float(config.args.screenRows), r)
+    w = max(float(config.args.screenCols), w)
+     
+    dispScale = min(float(config.args.screenRows)/r, float(config.args.screenCols)/w)
     pathImg = cv2.resize(cv2.resize(origImg.copy(), (img2.shape[1], img2.shape[0])),(0,0), fx = dispScale, fy = dispScale)
 
     while True:
