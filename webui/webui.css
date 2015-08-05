@@ -15,6 +15,10 @@ body {
     box-shadow: 0px 0px 20px 2px #c0d8e4 inset;
 }
 
+#solver-ui {
+    display: none;
+}
+
 .dz-message {
     font-size: 20pt;
 }

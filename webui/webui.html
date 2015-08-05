@@ -5,6 +5,7 @@
 <body>
     {{> upload}}
     {{> options}}
+    <br/>
     {{> solverUi}}
 </body>
 
@@ -25,12 +26,18 @@
         <label>Scale</label>
         <input id="scale" type="text"/>
     </div>-->
-    <button class="ui primary button" id="process">Process Maze</button>
+    <button class="ui primary disabled button" id="process">Process Maze</button>
     {{#if processingMaze}}
         <div class="ui active inline loader"></div>
     {{/if}}
 </template>
 
 <template name="solverUi">
-    <canvas width="0" height="0"></canvas>
+    <div id="solver-ui">
+        <div class="ui checkbox">
+            <input id="show-graph" type="checkbox"/>
+            <label>Debug Graph</label>
+        </div>
+        <canvas width="0" height="0"></canvas>
+    </div>
 </template>

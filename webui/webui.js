@@ -1,5 +1,5 @@
-var imagesPath = "/home/benjamin/projects/cv/CV-Maze-Solver/webui/uploads";
-var mazeSolverPath = "/home/benjamin/projects/cv/CV-Maze-Solver";
+var imagesPath = "/tmp/uploads";
+var mazeSolverPath = "/home/benjamin/projects/cv/CV-Maze-Solver/src";
 var Images = new FS.Collection("images", {
   stores: [new FS.Store.FileSystem("image", {path: imagesPath})]
 })
@@ -8,6 +8,7 @@ var imageId = undefined;
 var imageFile = undefined;
 
 if(Meteor.isClient) {
+  var handle = undefined;
   Dropzone.autoDiscover = false;
 
   Template.upload.rendered = function() {
@@ -15,14 +16,26 @@ if(Meteor.isClient) {
       maxFiles: 1,
       url: "/file-upload",
       accept: function(file, done) {
+        $('#solver-ui').hide();
+        $('#process').addClass('disabled');
         imageFile = file;
 
         Images.insert(file, function(err, fileObj) {
           if(err) {
             alert(err);
+            $('#process').removeClass('disabled');
           }
           else {
             imageId = fileObj._id;
+            var cursor = Images.find({_id: fileObj._id});
+            var liveQuery = cursor.observe({
+              changed: function(newImage, oldImage) {
+                if(newImage.isUploaded()) {
+                  liveQuery.stop();
+                  $('#process').removeClass('disabled');
+                }
+              }
+            })
           }
         })
       }
@@ -30,8 +43,10 @@ if(Meteor.isClient) {
   };
 
   Session.set('processingMaze', false);
+  Session.set('graphData', undefined);
   Template.options.helpers({
-    'processingMaze': function() { return Session.get('processingMaze'); }
+    'processingMaze': function() { return Session.get('processingMaze'); },
+    'processingDone': function() { return Session.get('processingDone'); }
   });
 
   Template.options.events({
@@ -41,6 +56,13 @@ if(Meteor.isClient) {
     }
   });
 
+  Session.set('showGraph', false);
+  Template.solverUi.events({
+    'click #show-graph': function(event) {
+      Session.set('showGraph', !Session.get('showGraph'));
+    }
+  })
+
   Tracker.autorun(function() {
     if(Session.get('processingMaze')) {
       $('#process').addClass('disabled');
@@ -48,14 +70,16 @@ if(Meteor.isClient) {
     else {
       $('#process').removeClass('disabled');
     }
-  })
+  });
 
   Streamy.on('graph', function(d, s) {
+    Session.set('graphData', d);
     Session.set('processingMaze', false);
+    $('#solver-ui').show();
+
     var ctx = $('canvas')[0].getContext('2d');
     var img = new Image();
     img.onload = function() {
-      console.log("image loaded");
       var aspect = img.width / img.height;
       var width = window.innerWidth - 50;
       var height = width / aspect;
@@ -66,27 +90,36 @@ if(Meteor.isClient) {
       ctx.canvas.height = height;
       ctx.drawImage(img, 0, 0, width, height);
 
-      /*for(var i = 0; i < d.graph.length; i++) {
-        var node = d.graph[i];
-        ctx.beginPath();
-        ctx.arc(node.pos[0] * sizeRatio, node.pos[1] * sizeRatio, 3, 0, 2 * Math.PI, false);
-        ctx.fillStyle = 'green';
-        ctx.fill();
-        ctx.lineWidth = 1;
-        ctx.strokeStyle = 'black';
-        ctx.stroke();
+      if(handle !== undefined) {
+        handle.stop();
+      }
+      handle = Tracker.autorun(function() {
+        if(Session.get('showGraph')) {
+          for(var i = 0; i < d.graph.length; i++) {
+            var node = d.graph[i];
+            ctx.beginPath();
+            ctx.arc(node.pos[0] * sizeRatio, node.pos[1] * sizeRatio, 3, 0, 2 * Math.PI, false);
+            ctx.fillStyle = 'green';
+            ctx.fill();
+            ctx.lineWidth = 1;
+            ctx.strokeStyle = 'black';
+            ctx.stroke();
 
-        for(var i2 = 0; i2 < node.connections.length; i2++) {
-          console.log(node.connections[i2].other);
-          var other = d.graph[node.connections[i2].other];
-          ctx.beginPath();
-          ctx.moveTo(node.pos[0] * sizeRatio, node.pos[1] * sizeRatio);
-          ctx.lineTo(other.pos[0] * sizeRatio, other.pos[1] * sizeRatio);
-          ctx.lineWidth = 1;
-          ctx.strokeStyle = 'green';
-          ctx.stroke();
+            for(var i2 = 0; i2 < node.connections.length; i2++) {
+              var other = d.graph[node.connections[i2].other];
+              ctx.beginPath();
+              ctx.moveTo(node.pos[0] * sizeRatio, node.pos[1] * sizeRatio);
+              ctx.lineTo(other.pos[0] * sizeRatio, other.pos[1] * sizeRatio);
+              ctx.lineWidth = 1;
+              ctx.strokeStyle = 'green';
+              ctx.stroke();
+            }
+          }
         }
-      }*/
+        else {
+          ctx.drawImage(img, 0, 0, width, height);
+        }
+      });
 
       var points = [];
 
@@ -156,16 +189,15 @@ if(Meteor.isClient) {
         var pos = getMousePos(ctx.canvas, event);
         var x = pos.x / sizeRatio;
         var y = pos.y / sizeRatio;
-        console.log(x, y);
         if(points.length == 0) {
           points.push(findClosest(x, y));
         }
         else {
           points.push(findClosest(x, y));
-          console.log(points);
           var path = dijkstra(points[0], points[1]);
-          console.log(path);
           ctx.drawImage(img, 0, 0, width, height);
+          handle.invalidate();
+          Tracker.flush();
           for(var i = 0; i < path.length-1; i++) {
             var a = d.graph[path[i]];
             var b = d.graph[path[i+1]];
