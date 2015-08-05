@@ -97,7 +97,7 @@ class MazeWorker(Protocol):
             self.jid = job_id
             print("Got job: {}".format(self.jid))
             job_id += 1
-            handdrawn, extension, length, scale = struct.unpack('>?3sIf', data[:12])
+            handdrawn, extension, scale, length = struct.unpack('>?3sfI', data[:12])
             self.extension = extension
             self.length = length
             self.handdrawn = handdrawn
