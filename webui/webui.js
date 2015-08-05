@@ -44,15 +44,25 @@ if(Meteor.isClient) {
 
   Session.set('processingMaze', false);
   Session.set('graphData', undefined);
+  Session.set('useScale', false);
+
   Template.options.helpers({
     'processingMaze': function() { return Session.get('processingMaze'); },
-    'processingDone': function() { return Session.get('processingDone'); }
+    'processingDone': function() { return Session.get('processingDone'); },
+    'useScale': function() { return Session.get('useScale'); }
   });
 
   Template.options.events({
     'click #process': function(event) {
-      Streamy.emit('solve', {imageId: imageId, handdrawn: $('#handdrawn').val()});
+      var scale = 0.0;
+      if(Session.get('useScale')) {
+        scale = parseFloat($('#scale').val());
+      }
+      Streamy.emit('solve', {imageId: imageId, handdrawn: $('#handdrawn').val(), scale: scale});
       Session.set('processingMaze', true);
+    },
+    'click #use-scale': function(event) {
+      Session.set('useScale', !Session.get('useScale'));
     }
   });
 
@@ -217,58 +227,76 @@ if(Meteor.isClient) {
 }
 
 if(Meteor.isServer) {
-  exec = Npm.require('child_process').exec;
+  var TOK_CLIENT_START_PROCESSING = 0;
+  var TOK_SERVER_DONE_PROCESSING = 0;
+
+  var net = Npm.require('net');
+
+  //var servers = [['localhost', 8007], ['localhost', 8008]];
+  //var servers = [['137.22.4.49', 8007]];
+  var servers = [
+    ['cmc306-12.mathcs.carleton.edu', 8007],
+    ['cmc306-10.mathcs.carleton.edu', 8007],
+    ['cmc306-09.mathcs.carleton.edu', 8007]
+  ]
+  var serverLoads = [];
+  for(var i = 0; i < servers.length; i++) {
+    serverLoads.push(0);
+  }
 
   Meteor.startup(function () {
   });
 
   Streamy.on('solve', function(d, s) {
     fileObj = Images.findOne({_id: d.imageId});
-    var cmd = "python2 " + mazeSolverPath + "/getgraph.py " + imagesPath + "/" + fileObj.copies.image.key;
-    if(d.handdrawn) {
-      cmd = cmd + " -d";
-    }
 
-    console.log("Solving Maze");
-    exec(cmd,
-      { maxBuffer: 1024*5000 },
-      function(error, stdout, stderr) {
-        console.log("Done");
-        if(error !== null) {
-          console.log('stderr: ' + stderr);
-          console.log('error: ' + error);
-        }
-        else {
-          stdout = stdout.split('---GRAPH START---')[1]
-          stdout = stdout.split('---').slice(1)
-          var graph = []
-          for(var i = 0; i < stdout.length; i++) {
-            var lines = stdout[i].split('\n');
-            var pos = lines[1].split(',');
-            var x = parseFloat(pos[0]);
-            var y = parseFloat(pos[1]);
-            lines = lines.slice(2);
+    function tryConnect() {
+      var serverIdx = serverLoads.indexOf(Math.min.apply(Math, serverLoads));
+      var server = servers[serverIdx];
+      console.log("Sending job to server " + server[0] + ":" + server[1])
+      serverLoads[serverIdx] += 1;
 
-            var node = {
-              pos: [x,y],
-              id: i,
-              connections: []
-            };
+      var conn = net.createConnection({
+        port: server[1],
+        host: server[0]
+      }, function() {
+        var stream = fileObj.createReadStream('images');
 
-            for(var i2 = 0; i2 < lines.length - 1; i2++) {
-              var line = lines[i2].split(',');
-              var other = parseInt(line[0], 10);
-              var dist = parseFloat(line[1]);
-              node.connections.push({
-                other: other,
-                dist: dist
-              })
-            }
+        var ext = fileObj.extension();
+        var buf = new Buffer([TOK_CLIENT_START_PROCESSING, d.handdrawn ? 1 : 0,
+          ext[0].charCodeAt(0),
+          ext[1].charCodeAt(0),
+          ext[2].charCodeAt(0),
+          0,0,0,0]);
+        buf.writeFloatBE(d.scale, 5);
+        var buffers = [];
+        stream.on('data', function(buffer) {
+          buffers.push(buffer);
+        });
+        stream.on('end', function() {
+          var buffer = Buffer.concat(buffers);
+          var lengthBuf = new Buffer(4);
+          lengthBuf.writeUInt32BE(buffer.length, 0);
+          buf = Buffer.concat([buf, lengthBuf, buffer]);
+          conn.write(buf);
 
-            graph.push(node);
-          }
-          Streamy.emit('graph', { graph: graph }, s);
-        }
+          var allData = "";
+          conn.on('data', function(data) {
+            allData = allData + data;
+          });
+          conn.on('end', function() {
+            serverLoads[serverIdx] -= 1;
+            var graph = JSON.parse(allData);
+            Streamy.emit('graph', {graph: graph}, s);
+          });
+        });
       });
+      conn.on('error', function(ex) {
+        console.log("Failed to connect to server " + server[0]);
+        console.log("Attempting to connect to a different server.");
+        tryConnect();
+      });
+    };
+    tryConnect();
   });
 }

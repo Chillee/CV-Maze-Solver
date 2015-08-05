@@ -4,6 +4,7 @@
 
 <body>
     {{> upload}}
+    <br/>
     {{> options}}
     <br/>
     {{> solverUi}}
@@ -21,11 +22,17 @@
         <label>Handdrawn</label>
     </div>
     <br/>
-    <!--<div class="ui checkbox">
+    <div class="ui checkbox">
         <input id="use-scale" type="checkbox"/>
         <label>Scale</label>
-        <input id="scale" type="text"/>
-    </div>-->
+    </div>
+    {{#if useScale}}
+        <div class="ui input">
+            <input id="scale" type="text"/>
+        </div>
+    {{/if}}
+    <br/>
+    <br/>
     <button class="ui primary disabled button" id="process">Process Maze</button>
     {{#if processingMaze}}
         <div class="ui active inline loader"></div>
