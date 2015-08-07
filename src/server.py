@@ -95,7 +95,7 @@ class MazeWorker(Protocol):
 
         if ord(token) == TOK_CLIENT_START_PROCESSING:
             self.jid = job_id
-            print("Got job: {}".format(self.jid))
+            print("Got job: {} ({})".format(self.jid, self.length))
             job_id += 1
             handdrawn, extension, scale, length = struct.unpack('>?3sfI', data[:12])
             self.extension = extension
