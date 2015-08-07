@@ -11,7 +11,29 @@ if(Meteor.isClient) {
   var handle = undefined;
   Dropzone.autoDiscover = false;
 
+  function uploadFile(file) {
+    Images.insert(file, function(err, fileObj) {
+      if(err) {
+        alert(err);
+        $('#process').removeClass('disabled');
+      }
+      else {
+        imageId = fileObj._id;
+        var cursor = Images.find({_id: fileObj._id});
+        var liveQuery = cursor.observe({
+          changed: function(newImage, oldImage) {
+            if(newImage.isUploaded()) {
+              liveQuery.stop();
+              $('#process').removeClass('disabled');
+            }
+          }
+        })
+      }
+    });
+  }
+
   Template.upload.rendered = function() {
+    $('.ui.dropdown').dropdown();
     $('#dropzone').dropzone({
       maxFiles: 1,
       url: "/file-upload",
@@ -19,28 +41,25 @@ if(Meteor.isClient) {
         $('#solver-ui').hide();
         $('#process').addClass('disabled');
         imageFile = file;
-
-        Images.insert(file, function(err, fileObj) {
-          if(err) {
-            alert(err);
-            $('#process').removeClass('disabled');
-          }
-          else {
-            imageId = fileObj._id;
-            var cursor = Images.find({_id: fileObj._id});
-            var liveQuery = cursor.observe({
-              changed: function(newImage, oldImage) {
-                if(newImage.isUploaded()) {
-                  liveQuery.stop();
-                  $('#process').removeClass('disabled');
-                }
-              }
-            })
-          }
-        })
+        uploadFile(file);
       }
-    })
+    });
   };
+
+  Template.upload.events({
+    'change #preset-maze': function(event) {
+      imageFile = null;
+      var xhr = new XMLHttpRequest();
+      xhr.open("GET", $('#preset-maze-top').dropdown('get value'));
+      xhr.responseType = "blob";
+      xhr.onload = function() {
+        console.log(xhr.response);
+        imageFile = xhr.response;
+        uploadFile(xhr.response);
+      };
+      xhr.send();
+    }
+  });
 
   Session.set('processingMaze', false);
   Session.set('graphData', undefined);
@@ -232,7 +251,7 @@ if(Meteor.isServer) {
 
   var net = Npm.require('net');
 
-  //var servers = [['localhost', 8007], ['localhost', 8008]];
+  //var servers = [['localhost', 8007]];
   //var servers = [['137.22.4.49', 8007]];
   var servers = [
     ['cmc306-12.mathcs.carleton.edu', 8007],
@@ -263,6 +282,9 @@ if(Meteor.isServer) {
         var stream = fileObj.createReadStream('images');
 
         var ext = fileObj.extension();
+        if(ext[0] === undefined) {
+          ext = 'png';
+        }
         var buf = new Buffer([TOK_CLIENT_START_PROCESSING, d.handdrawn ? 1 : 0,
           ext[0].charCodeAt(0),
           ext[1].charCodeAt(0),
@@ -285,6 +307,7 @@ if(Meteor.isServer) {
             allData = allData + data;
           });
           conn.on('end', function() {
+            console.log("Job complete, sending back to client");
             serverLoads[serverIdx] -= 1;
             var graph = JSON.parse(allData);
             Streamy.emit('graph', {graph: graph}, s);

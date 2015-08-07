@@ -14,6 +14,22 @@
     <!--<div id="dropzone"></div>-->
     <form action="/file-upload" class="dropzone" id="dropzone"></form>
     <div id="dropzone"></div>
+    <h5>OR</h5>
+    <p>
+        Select a preset maze
+        <div class="ui dropdown" id="preset-maze-top">
+            <input id="preset-maze" type="hidden"/>
+            <i class="dropdown icon"></i>
+            <div class="default text">Maze</div>
+            <div class="menu">
+                <div class="item" data-value="/mazes/maze1.png">Basic Maze</div>
+                <div class="item" data-value="/mazes/circular_maze1.png">Circular Maze</div>
+                <div class="item" data-value="/mazes/hex.png">Hexagonal Maze</div>
+                <div class="item" data-value="/mazes/maze3.png">Handdrawn Maze</div>
+                <div class="item" data-value="/mazes/snails.png">Very Large Snail Maze</div>
+            </div>
+        </div>
+    </p>
 </template>
 
 <template name="options">
@@ -45,6 +61,7 @@
             <input id="show-graph" type="checkbox"/>
             <label>Debug Graph</label>
         </div>
+        <br/>
         <canvas width="0" height="0"></canvas>
     </div>
 </template>
